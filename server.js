@@ -1,72 +1,76 @@
 const express = require("express");
 const cors = require("cors");
 const cookieSession = require("cookie-session");
+const ngrok = require("ngrok");
 
 const app = express();
 
 app.use(cors());
-/* for Angular Client (withCredentials) */
-// app.use(
-//   cors({
-//     credentials: true,
-//     origin: ["http://localhost:8081"],
-//   })
-// );
-
-// parse requests of content-type - application/json
 app.use(express.json());
-
-// parse requests of content-type - application/x-www-form-urlencoded
 app.use(express.urlencoded({ extended: true }));
 
 app.use(
   cookieSession({
     name: "bezkoder-session",
-    keys: ["COOKIE_SECRET"], // should use as secret environment variable
+    keys: ["COOKIE_SECRET"],
     httpOnly: true,
-    sameSite: 'strict'
+    sameSite: "strict",
   })
 );
 
-// database
 const db = require("./app/models");
 const Role = db.role;
 
 db.sequelize.sync();
-// force: true will drop the table if it already exists
-// db.sequelize.sync({force: true}).then(() => {
-//   console.log('Drop and Resync Database with { force: true }');
-//   initial();
-// });
 
-// simple route
 app.get("/", (req, res) => {
   res.json({ message: "Welcome to bezkoder application." });
 });
 
-// routes
 require("./app/routes/auth.routes")(app);
 require("./app/routes/user.routes")(app);
 
-// set port, listen for requests
-const PORT = process.env.PORT || 8080;
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}.`);
-});
+const startServer = async () => {
+  try {
+    const url = await ngrok.connect({
+      proto: "http",
+      addr: 8080, // Ganti dengan nomor port server Anda
+    });
+    console.log("Ngrok URL:", url);
+  } catch (error) {
+    console.error("Error starting ngrok:", error);
+  }
+
+  const PORT = process.env.PORT || 8080;
+  app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}.`);
+  });
+};
 
 function initial() {
-  Role.create({
-    id: 1,
-    name: "user",
-  });
+  try {
+    Role.findOrCreate({
+      where: { id: 1 },
+      defaults: { name: "user" },
+    });
 
-  Role.create({
-    id: 2,
-    name: "moderator",
-  });
+    Role.findOrCreate({
+      where: { id: 2 },
+      defaults: { name: "moderator" },
+    });
 
-  Role.create({
-    id: 3,
-    name: "admin",
-  });
+    Role.findOrCreate({
+      where: { id: 3 },
+      defaults: { name: "admin" },
+    });
+
+    console.log("Roles created or already exist.");
+  } catch (error) {
+    console.error("Error creating roles:", error);
+  }
 }
+
+(async () => {
+  await startServer();
+  initial();
+})();

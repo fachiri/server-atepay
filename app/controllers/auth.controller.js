@@ -12,8 +12,9 @@ exports.signup = async (req, res) => {
   // Save User to Database
   try {
     const user = await User.create({
-      username: req.body.username,
+      name: req.body.name,
       email: req.body.email,
+      phone: req.body.phone,
       password: bcrypt.hashSync(req.body.password, 8),
     });
 
@@ -42,12 +43,12 @@ exports.signin = async (req, res) => {
   try {
     const user = await User.findOne({
       where: {
-        username: req.body.username,
+        email: req.body.email,
       },
     });
 
     if (!user) {
-      return res.status(404).send({ message: "User Not found." });
+      return res.status(404).send({ message: "Email atau Password salah!" });
     }
 
     const passwordIsValid = bcrypt.compareSync(
@@ -56,18 +57,19 @@ exports.signin = async (req, res) => {
     );
 
     if (!passwordIsValid) {
-      return res.status(401).send({
-        message: "Invalid Password!",
+      return res.status(404).send({
+        message: "Email atau Password salah!",
       });
     }
 
-    const token = jwt.sign({ id: user.id },
-                           config.secret,
-                           {
-                            algorithm: 'HS256',
-                            allowInsecureKeySizes: true,
-                            expiresIn: 86400, // 24 hours
-                           });
+    const token = jwt.sign(
+      { id: user.id },
+      config.secret, {
+        algorithm: 'HS256',
+        allowInsecureKeySizes: true,
+        expiresIn: 86400, // 24 hours
+      }
+    );
 
     let authorities = [];
     const roles = await user.getRoles();
@@ -78,10 +80,13 @@ exports.signin = async (req, res) => {
     req.session.token = token;
 
     return res.status(200).send({
-      id: user.id,
-      username: user.username,
-      email: user.email,
-      roles: authorities,
+      user: {
+        id: user.id,
+        email: user.email,
+        phone: user.phone,
+        roles: authorities,
+      },
+      token
     });
   } catch (error) {
     return res.status(500).send({ message: error.message });
