@@ -8,6 +8,8 @@ const Op = db.Sequelize.Op;
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 
+const twilio = require('twilio');
+
 exports.signup = async (req, res) => {
   // Save User to Database
   try {
@@ -103,3 +105,30 @@ exports.signout = async (req, res) => {
     this.next(err);
   }
 };
+
+exports.sendotp = async (req, res) => {
+  const { phoneNumber } = req.body;
+
+  // Generate random 6-digit OTP
+  const otp = Math.floor(100000 + Math.random() * 900000);
+
+  // Send OTP via SMS
+  const client = twilio(
+    process.env.TWILIO_ACCOUNT_SID,
+    process.env.TWILIO_AUTH_TOKEN
+  );
+  client.messages
+    .create({
+      body: `Your OTP: ${otp}`,
+      from: process.env.TWILIO_PHONE_NUMBER,
+      to: phoneNumber,
+    })
+    .then((message) => {
+      console.log(message.sid);
+      res.status(200).json({ message: 'OTP sent successfully' });
+    })
+    .catch((error) => {
+      console.error(error);
+      res.status(500).json({ message: 'Failed to send OTP' });
+    });
+}
