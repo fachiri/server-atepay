@@ -1,10 +1,15 @@
 const express = require("express");
 const cors = require("cors");
 const cookieSession = require("cookie-session");
-const ngrok = require("ngrok");
+const expressLayouts = require('express-ejs-layouts');
+const flash = require('connect-flash'); 
 require('dotenv').config();
 
 const app = express();
+
+const useNgrok = process.env.USE_NGROK === "true";
+const port = useNgrok ? 
+4000 : process.env.PORT;
 
 app.use(cors());
 app.use(express.json());
@@ -13,11 +18,23 @@ app.use(express.urlencoded({ extended: true }));
 app.use(
   cookieSession({
     name: "bezkoder-session",
-    keys: ["COOKIE_SECRET"],
+    keys: [process.env.COOKIE_SECRET],
     httpOnly: true,
     sameSite: "strict",
   })
 );
+
+app.use(flash());
+app.use((req, res, next) => {
+  res.locals.alert = req.flash("alert");
+  res.locals.message = req.flash("message");
+  next();
+});
+
+app.set('views', './app/views');
+app.set('view engine', 'ejs');
+app.use(expressLayouts);
+app.use(express.static(__dirname + "/app/public"));
 
 const db = require("./app/models");
 const Role = db.role;
@@ -25,27 +42,29 @@ const Role = db.role;
 db.sequelize.sync();
 
 app.get("/", (req, res) => {
-  res.json({ message: "Welcome to bezkoder application." });
+  res.json({ message: "Welcome to Atepay." });
 });
 
 require("./app/routes/auth.routes")(app);
 require("./app/routes/user.routes")(app);
+require("./app/routes/web.routes")(app);
 
 const startServer = async () => {
   try {
-    const url = await ngrok.connect({
-      proto: "http",
-      addr: 8080, // Ganti dengan nomor port server Anda
-    });
-    console.log("Ngrok URL:", url);
-  } catch (error) {
-    console.error("Error starting ngrok:", error);
-  }
+    if (useNgrok) {
+      const url = await ngrok.connect({
+        proto: "http",
+        addr: port,
+      });
+      console.log("Ngrok URL:", url);
+    }
 
-  const PORT = process.env.PORT || 8080;
-  app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}.`);
-  });
+    app.listen(port, () => {
+      console.log(`Server URL: http://localhost:${port}`);
+    });
+  } catch (error) {
+    console.error("Error starting server:", error);
+  }
 };
 
 function initial() {

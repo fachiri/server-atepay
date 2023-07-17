@@ -18,6 +18,12 @@ module.exports = (sequelize, Sequelize) => {
     },
     avatar: {
       type: Sequelize.STRING
+    },
+    code:{
+      type: Sequelize.INTEGER(6)
+    },
+    pin:{
+      type: Sequelize.STRING(6)
     }
   });
 

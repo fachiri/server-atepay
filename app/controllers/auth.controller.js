@@ -9,6 +9,7 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 
 const twilio = require('twilio');
+const { where } = require("sequelize");
 
 exports.signup = async (req, res) => {
   // Save User to Database
@@ -30,11 +31,11 @@ exports.signup = async (req, res) => {
       });
 
       const result = user.setRoles(roles);
-      if (result) res.send({ message: "User registered successfully!" });
+      if (result) res.send({ message: "Registrasi Berhasil!" });
     } else {
       // user has role = 1
       const result = user.setRoles([1]);
-      if (result) res.send({ message: "User registered successfully!" });
+      if (result) res.send({ message: "Registrasi Berhasil!!" });
     }
   } catch (error) {
     res.status(500).send({ message: error.message });
@@ -63,32 +64,22 @@ exports.signin = async (req, res) => {
         message: "Email atau Password salah!",
       });
     }
-
-    const token = jwt.sign(
-      { id: user.id },
-      config.secret, {
-        algorithm: 'HS256',
-        allowInsecureKeySizes: true,
-        expiresIn: 86400, // 24 hours
-      }
-    );
-
     let authorities = [];
     const roles = await user.getRoles();
     for (let i = 0; i < roles.length; i++) {
       authorities.push("ROLE_" + roles[i].name.toUpperCase());
     }
 
-    req.session.token = token;
-
     return res.status(200).send({
+      message: 'Login berhasil',
       user: {
         id: user.id,
+        name: user.name,
         email: user.email,
         phone: user.phone,
         roles: authorities,
       },
-      token
+
     });
   } catch (error) {
     return res.status(500).send({ message: error.message });
@@ -99,18 +90,26 @@ exports.signout = async (req, res) => {
   try {
     req.session = null;
     return res.status(200).send({
-      message: "You've been signed out!"
+      message: "Anda telah Logout!"
     });
   } catch (err) {
     this.next(err);
   }
 };
-
+//sendotp
 exports.sendotp = async (req, res) => {
-  const { phoneNumber } = req.body;
+  const { phoneNumber, id } = req.body;
+  console.log(phoneNumber);
+  console.log(id);
 
   // Generate random 6-digit OTP
   const otp = Math.floor(100000 + Math.random() * 900000);
+
+  const user = await User.update({ code: otp }, {
+    where: {
+      id
+    }
+  });
 
   // Send OTP via SMS
   const client = twilio(
@@ -119,16 +118,145 @@ exports.sendotp = async (req, res) => {
   );
   client.messages
     .create({
-      body: `Your OTP: ${otp}`,
+      body: `Kode OTP anda adalah : ${otp}`,
       from: process.env.TWILIO_PHONE_NUMBER,
       to: phoneNumber,
     })
     .then((message) => {
-      console.log(message.sid);
-      res.status(200).json({ message: 'OTP sent successfully' });
+      res.status(200).json({ message: 'Kode OTP Telah Terkirim!' });
     })
     .catch((error) => {
-      console.error(error);
-      res.status(500).json({ message: 'Failed to send OTP' });
+      res.status(500).json({ message: 'Gagal Mengirimkan Kode OTP!' });
     });
 }
+// verifyotp
+exports.verifytoken = async(req, res) => {
+  const {id, code} = req.body;
+  try {
+    const user = await User.findOne({
+      where: {
+        id,
+        code
+      },
+    });
+  
+    if (!user) {
+      return res.status(401).json({message: 'Invalid OTP!'})
+    }
+    const token = jwt.sign(
+      { id: user.id },
+      config.secret, {
+        algorithm: 'HS256',
+        allowInsecureKeySizes: true,
+        expiresIn: 86400, // 24 hours
+      }
+    );
+  
+    
+    await User.update({ code: null }, {
+      where: {
+        id
+      }
+    });
+    res.status(200).json({
+      message: 'Verifikasi Berhasil!',
+      token
+    })
+  
+  } catch (error) {
+    return res.status(500).send({ message: error.message });
+  }
+}
+//buatpin
+exports.createpin = async (req, res) => {
+  const {id , pin} = req.body
+  try {
+    const user = await User.findOne({
+      where: {
+        id
+      }
+    });
+    if (!user) {
+      return res.status(404).json({ message: 'User tidak ditemukan!' });
+    }
+    const hashedPin = await bcrypt.hash(pin, 8);
+    await user.update({ pin: hashedPin, 
+      where:{
+        id
+    }});
+    return res.status(200).json({ message: "Pin berhasil dibuat!"})
+
+  } catch (error) {
+    return res.status(500).send({ message: error.message });
+  }
+}
+
+//gantipin
+exports.resetpin = async (req, res) => {
+  const {id, pin} = req.body
+  try {
+
+    const user = await User.findOne({
+      where: {
+        id,
+      }
+    });
+
+    if (!user) {
+      return res.status(404).json({ message: 'User tidak ditemukan!' });
+    }
+
+    const hashedPin = await bcrypt.hash(pin, 8);
+    await user.update({ pin: hashedPin});
+
+    return res.status(200).json({ message: "Pin berhasil diganti!"})
+  } catch (error) {
+    return res.status(500).send({ message: error.message })
+  }
+}
+
+
+//resetpassword
+exports.resetpassword = async (req, res) => {
+  const { id, newPassword} = req.body
+  try {
+    const user = await User.findOne({
+      where:{
+        id
+      }})
+
+      if (!user) {
+        return res.status(404).json({ message: 'User tidak ditemukan!' });
+      }
+  
+      const newHasPassword = await bcrypt.hash(newPassword, 8);
+
+      await user.update({ password: newHasPassword});
+  
+      return res.status(200).json({ message: "Password berhasil diganti!"})
+
+  } catch (error) {
+    return res.status(500).send({ message: error.message })
+  }
+}
+
+
+//checktoken
+exports.checktoken = async (req, res) => {
+  let token = req.params.token;
+
+  if (!token) {
+    return res.status(401).json({ message: "No token provided!" });
+  }
+  try {
+    const decoded = jwt.verify(token, config.secret);
+    res.status(200).json({
+      message: "token is valid",
+      data: decoded,
+    });
+  } catch (error) {
+    res.status(401).json({
+      message: "invalid token",
+    });
+  }
+};

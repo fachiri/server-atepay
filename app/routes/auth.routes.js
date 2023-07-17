@@ -23,5 +23,16 @@ module.exports = function(app) {
 
   app.post("/api/auth/signout", controller.signout);
 
+  app.post("/api/auth/checktoken", controller.checktoken);
+
+  app.post("/api/auth/verifytoken", controller.verifytoken);
+  
+  app.post("/api/auth/createpin", controller.createpin);
+  
+  app.post("/api/auth/resetpin", controller.resetpin);
+
+  app.post("/api/auth/resetpassword", controller.resetpassword);
+
   app.post("/api/auth/sendotp", controller.sendotp)
+
 };
