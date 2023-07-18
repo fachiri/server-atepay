@@ -4,7 +4,7 @@
   "description": "Node.js Express Server for ATEPAY app",
   "main": "server.js",
   "scripts": {
-    "start": "nodemon"
+    "start": "node server.js"
   },
   "keywords": [
     "node.js",
