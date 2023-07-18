@@ -44,8 +44,8 @@ app.use((req, res, next) => {
 const db = require("./app/models");
 const Role = db.role;
 
-db.sequelize.sync();
-// db.sequelize.sync({ alter: true});
+// db.sequelize.sync();
+db.sequelize.sync({ alter: true});
 
 app.get("/", (req, res) => {
   res.json({ message: "Welcome to Atepay." });
