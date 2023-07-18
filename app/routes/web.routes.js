@@ -21,7 +21,9 @@ const upload = multer({
     ) {
       cb(null, true);
     } else {
-      cb(new Error('Only image files are allowed.'));
+      req.flash('alert', 'danger');
+      req.flash('message', 'Only image files are allowed.');
+      return cb(null, false);
     }
   },
 });
@@ -40,9 +42,7 @@ module.exports = function(app) {
     });
 
     // setting
-    app.get('/setting', (req, res) => {
-        res.render('../views/page/setting', {title: 'Pengaturan', layout : 'layout/master'})
-    });
+    app.get('/setting', controller.setting);
     app.post("/setting/slider/add", upload.single('slider'), controller.sliderAdd);
 
     app.get('/login', (req, res) => {   

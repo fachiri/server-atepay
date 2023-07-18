@@ -3,6 +3,7 @@ const cors = require("cors");
 const cookieSession = require("cookie-session");
 const expressLayouts = require('express-ejs-layouts');
 const flash = require('connect-flash'); 
+const session = require("express-session");
 require('dotenv').config();
 
 const app = express();
@@ -15,31 +16,39 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use(
-  cookieSession({
-    name: "bezkoder-session",
-    keys: [process.env.COOKIE_SECRET],
-    httpOnly: true,
-    sameSite: "strict",
-  })
-);
-
-app.use(flash());
-app.use((req, res, next) => {
-  res.locals.alert = req.flash("alert");
-  res.locals.message = req.flash("message");
-  next();
-});
+// app.use(
+//   cookieSession({
+//     name: "bezkoder-session",
+//     keys: [process.env.COOKIE_SECRET],
+//     httpOnly: true,
+//     sameSite: "strict",
+//   }),
+// );
 
 app.set('views', './app/views');
 app.set('view engine', 'ejs');
 app.use(expressLayouts);
 app.use(express.static(__dirname + "/app/public"));
 
+app.use(session({
+  secret: 'atepay-secret-key',
+  resave: false,
+  saveUninitialized: false
+}));
+
+app.use(flash());
+
+app.use((req, res, next) => {
+  res.locals.alert = req.flash('alert');
+  res.locals.message = req.flash('message');
+  next();
+});
+
 const db = require("./app/models");
 const Role = db.role;
 
 db.sequelize.sync();
+// db.sequelize.sync({ alter: true});
 
 app.get("/", (req, res) => {
   res.json({ message: "Welcome to Atepay." });
@@ -48,6 +57,7 @@ app.get("/", (req, res) => {
 require("./app/routes/auth.routes")(app);
 require("./app/routes/user.routes")(app);
 require("./app/routes/web.routes")(app);
+require("./app/routes/payment.routes")(app);
 
 const startServer = async () => {
   try {

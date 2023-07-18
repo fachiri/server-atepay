@@ -11,6 +11,8 @@ const bcrypt = require("bcryptjs");
 const twilio = require('twilio');
 const { where } = require("sequelize");
 
+const SECRET = process.env.SECRET
+
 exports.signup = async (req, res) => {
   // Save User to Database
   try {
@@ -145,7 +147,8 @@ exports.verifytoken = async(req, res) => {
     }
     const token = jwt.sign(
       { id: user.id },
-      config.secret, {
+      SECRET,
+      {
         algorithm: 'HS256',
         allowInsecureKeySizes: true,
         expiresIn: 86400, // 24 hours
@@ -249,7 +252,7 @@ exports.checktoken = async (req, res) => {
     return res.status(401).json({ message: "No token provided!" });
   }
   try {
-    const decoded = jwt.verify(token, config.secret);
+    const decoded = jwt.verify(token, SECRET);
     res.status(200).json({
       message: "token is valid",
       data: decoded,
