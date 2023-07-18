@@ -4,13 +4,10 @@ const cookieSession = require("cookie-session");
 const expressLayouts = require('express-ejs-layouts');
 const flash = require('connect-flash'); 
 const session = require("express-session");
+const ngrok = require('ngrok');
 require('dotenv').config();
 
 const app = express();
-
-const useNgrok = process.env.USE_NGROK === "true";
-const port = useNgrok ? 
-4000 : process.env.PORT;
 
 app.use(cors());
 app.use(express.json());
@@ -58,19 +55,17 @@ require("./app/routes/auth.routes")(app);
 require("./app/routes/user.routes")(app);
 require("./app/routes/web.routes")(app);
 require("./app/routes/payment.routes")(app);
+require("./app/routes/callback.routes")(app);
 
 const startServer = async () => {
   try {
-    if (useNgrok) {
-      const url = await ngrok.connect({
-        proto: "http",
-        addr: port,
-      });
-      console.log("Ngrok URL:", url);
-    }
-
-    app.listen(port, () => {
-      console.log(`Server URL: http://localhost:${port}`);
+    const url = await ngrok.connect({
+      proto: "http",
+      addr: process.env.PORT,
+    });
+    console.log("Ngrok URL:", url);
+    app.listen(process.env.PORT, () => {
+      console.log(`Server URL: http://localhost:${process.env.PORT}`);
     });
   } catch (error) {
     console.error("Error starting server:", error);
