@@ -1,5 +1,7 @@
 const controller = require("../controllers/web.controller");
 const multer = require('multer');
+  const db = require("../models");
+  const Page = db.page;
 
 // Konfigurasi penyimpanan file
 const storage = multer.diskStorage({
@@ -28,7 +30,7 @@ const upload = multer({
   },
 });
 
-module.exports = function(app) {
+module.exports = async (app) => {
     app.use(function(req, res, next) {
       res.header(
         "Access-Control-Allow-Headers",
@@ -36,7 +38,14 @@ module.exports = function(app) {
       );
       next();
     });
-    
+
+    // public
+    const pages = await Page.findAll()
+    for (const e of pages) {
+      // console.log(e.url.split('/')[1])
+      app.get(e.url, controller[e.url.split('/')[1]]);
+    }
+   
     app.get('/dashboard', (req, res) => {
         res.render('../views/page/index', {title: 'Dashboard', layout : 'layout/master'})
     });
@@ -44,6 +53,11 @@ module.exports = function(app) {
     // setting
     app.get('/setting', controller.setting);
     app.post("/setting/slider/add", upload.single('slider'), controller.sliderAdd);
+    app.get('/setting/slider/delete/:id', controller.sliderDelete);
+    app.post('/setting/slider/moveLeft/:id', controller.sliderMoveLeft);
+    app.post('/setting/slider/moveRight/:id', controller.sliderMoveRight);
+    app.post('/setting/pages/updateContent/:id', controller.updateContent);
+    
 
     app.get('/login', (req, res) => {   
         res.render('../views/page/login', {title: 'login', layout: 'layout/master2'} )
