@@ -3,26 +3,31 @@ const config = require("../config/auth.config.js");
 const db = require("../models");
 const User = db.user;
 
-verifyToken = (req, res, next) => {
-  let token = req.session.token;
+const SECRET = process.env.SECRET
 
-  if (!token) {
+verifyToken = (req, res, next) => {
+  const bearerHeader = req.headers['authorization'];
+
+  if (!bearerHeader || !bearerHeader.startsWith('Bearer ')) {
     return res.status(403).send({
       message: "No token provided!",
     });
   }
 
-  jwt.verify(token,
-             config.secret,
-             (err, decoded) => {
-              if (err) {
-                return res.status(401).send({
-                  message: "Unauthorized!",
-                });
-              }
-              req.userId = decoded.id;
-              next();
-             });
+  const bearerToken = bearerHeader.split(' ')[1];
+
+  jwt.verify(bearerToken,
+    SECRET,
+    (err, decoded) => {
+      if (err) {
+      console.log(err)
+      return res.status(401).send({
+        message: "Unauthorized!",
+      });
+    }
+    req.userId = decoded.id;
+    next();
+  });
 };
 
 isAdmin = async (req, res, next) => {

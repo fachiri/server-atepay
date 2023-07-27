@@ -28,7 +28,7 @@ app.use(expressLayouts);
 app.use(express.static(__dirname + "/app/public"));
 
 app.use(session({
-  secret: 'atepay-secret-key',
+  secret: process.env.SECRET,
   resave: false,
   saveUninitialized: false
 }));
@@ -44,8 +44,7 @@ app.use((req, res, next) => {
 const db = require("./app/models");
 const Role = db.role;
 
-// db.sequelize.sync();
-db.sequelize.sync({ alter: true});
+db.sequelize.sync();
 
 app.get("/", (req, res) => {
   res.json({ message: "Welcome to Atepay." });
@@ -96,6 +95,6 @@ function initial() {
 }
 
 (async () => {
-  await startServer();
   initial();
+  await startServer();
 })();

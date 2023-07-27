@@ -23,3 +23,24 @@ exports.createBill = async (req, res) => {
     res.status(error.response.status).send(error.response.data);
   }
 };
+
+exports.myBills = async (req, res) => {
+  try {
+    const { user_id } = req.query
+    if (!user_id) {
+      throw new Error('Query user_id tidak ditemukan!')
+    }
+    const bills = await Bill.findAll({
+      where: {
+        user_id
+      },
+      include: {
+        model: db.payment
+      }
+    })
+    res.send(bills)
+  } catch (error) {
+    console.log(error)
+    res.status(500).send({ error: error.message });
+  }
+};
