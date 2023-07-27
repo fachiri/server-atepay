@@ -45,18 +45,11 @@ const db = require("./app/models");
 const Role = db.role;
 const Page = db.page;
 
-db.sequelize.sync();
+db.sequelize.sync({ alter: true });
 
 app.get("/", (req, res) => {
   res.render('../views/page/landing', {layout: 'layout/master3'})
 });
-
-
-require("./app/routes/auth.routes")(app);
-require("./app/routes/user.routes")(app);
-require("./app/routes/web.routes")(app);
-require("./app/routes/payment.routes")(app);
-require("./app/routes/callback.routes")(app);
 
 const startServer = async () => {
   try {
@@ -119,5 +112,10 @@ function initial() {
 
 (async () => {
   initial();
+  require("./app/routes/auth.routes")(app);
+  require("./app/routes/user.routes")(app);
+  require("./app/routes/web.routes")(app);
+  require("./app/routes/payment.routes")(app);
+  require("./app/routes/callback.routes")(app);
   await startServer();
 })();
