@@ -45,14 +45,8 @@ const db = require("./app/models");
 const Role = db.role;
 const Page = db.page;
 
-<<<<<<< HEAD
-console.log('----sinc')
-db.sequelize.sync();
-// db.sequelize.sync({ alter: true});
-=======
 // db.sequelize.sync();
 db.sequelize.sync({ alter: true});
->>>>>>> cf5ed5db31f9842b53e1acb9bc47b5c58e368d29
 
 app.get("/", (req, res) => {
   res.render('../views/page/landing', {layout: 'layout/master3'})
@@ -67,20 +61,6 @@ require("./app/routes/callback.routes")(app);
 
 const startServer = async () => {
   try {
-<<<<<<< HEAD
-    if (useNgrok) {
-      const url = await ngrok.connect({
-        proto: "http",
-        addr: port,
-      });
-      console.log("Ngrok URL:", url);
-    }
-    await db.sequelize.sync(); // Synchronize models with the database
-    initial();
-
-    app.listen(port, () => {
-      console.log(`Server URL: http://localhost:${port}`);
-=======
     const url = await ngrok.connect({
       proto: "http",
       addr: process.env.PORT,
@@ -88,7 +68,6 @@ const startServer = async () => {
     console.log("Ngrok URL:", url);
     app.listen(process.env.PORT, () => {
       console.log(`Server URL: http://localhost:${process.env.PORT}`);
->>>>>>> cf5ed5db31f9842b53e1acb9bc47b5c58e368d29
     });
   } catch (error) {
     console.error("Error starting server:", error);

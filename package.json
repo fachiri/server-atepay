@@ -4,12 +4,7 @@
   "description": "Node.js Express Server for ATEPAY app",
   "main": "server.js",
   "scripts": {
-<<<<<<< HEAD
-    "start":"nodemon server.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
-=======
     "start": "node server.js"
->>>>>>> cf5ed5db31f9842b53e1acb9bc47b5c58e368d29
   },
   "keywords": [
     "node.js",
