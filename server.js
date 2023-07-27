@@ -10,8 +10,8 @@ require('dotenv').config();
 const app = express();
 
 app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ limit: "10mb", extended: true }));
 
 // app.use(
 //   cookieSession({
@@ -43,12 +43,14 @@ app.use((req, res, next) => {
 
 const db = require("./app/models");
 const Role = db.role;
+const Page = db.page;
 
 db.sequelize.sync();
 
 app.get("/", (req, res) => {
-  res.json({ message: "Welcome to Atepay." });
+  res.render('../views/page/landing', {layout: 'layout/master3'})
 });
+
 
 require("./app/routes/auth.routes")(app);
 require("./app/routes/user.routes")(app);
@@ -73,6 +75,7 @@ const startServer = async () => {
 
 function initial() {
   try {
+    console.log('-----seed')
     Role.findOrCreate({
       where: { id: 1 },
       defaults: { name: "user" },
@@ -86,6 +89,26 @@ function initial() {
     Role.findOrCreate({
       where: { id: 3 },
       defaults: { name: "admin" },
+    });
+    Page.findOrCreate({
+      where: { id: 1 },
+      defaults: { judul: "Halaman Informasi" , url: "/informasi", content: "Halaman Informasi" },
+    });
+    Page.findOrCreate({
+      where: { id: 2 },
+      defaults: { judul: "Halaman Tentang" , url: "/tentang", content: "Halaman Tentang" },
+    });
+    Page.findOrCreate({
+      where: { id: 3 },
+      defaults: { judul: "Halaman Bantuan" , url: "/bantuan", content: "Halaman Bantuan" },
+    });
+    Page.findOrCreate({
+      where: { id: 4 },
+      defaults: { judul: "Halaman Faq" , url: "/faq", content: "Halaman Faq" },
+    });
+    Page.findOrCreate({
+      where: { id: 5 },
+      defaults: { judul: "Halaman Hubungi" , url: "/hubungi", content: "Halaman Hubungi" },
     });
 
     console.log("Roles created or already exist.");

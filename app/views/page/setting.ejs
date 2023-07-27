@@ -1,3 +1,11 @@
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/summernote/dist/summernote-lite.min.css">
+
+<!-- Include jQuery (required by Summernote) -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- Include Summernote Lite JavaScript -->
+<script src="https://cdn.jsdelivr.net/npm/summernote/dist/summernote-lite.min.js"></script>
+
 <div class="container-fluid">
     <div class="d-sm-flex align-items-center justify-content-between mb-4">
         <h1 class="h3 mb-0 text-gray-800"><%= title %></h1>
@@ -10,9 +18,48 @@
         <div class="card-header py-3">
             <h6 class="m-0 font-weight-bold text-primary">Halaman Aplikasi</h6>
         </div>
-        <div class="card-body">
-            Halaman Aplikasi
-        </div>
+        <% if(pages && pages.length) { %>
+        <% pages.forEach((e) => { %>
+        <section>
+            <div class="row">
+                <div class="col-12">
+                  <div class="card">
+                    <div class="card-header"> 
+                      <h6><%= e.judul %></h6>
+                    </div>
+                    <div class="card-body">
+                    <form action="/setting/pages/updateContent/<%= e.id %>" method="post">
+                      <div class="form-group row mb-4">
+                        <label class="col-form-label text-md-right col-12 col-md-3 col-lg-3">Url</label>
+                        <div class="col-sm-12 col-md-7">
+                          <input type="text" class="form-control" name="url" value="<%= e.url %>">
+                        </div>
+                      </div>
+                      <div class="form-group row mb-4" id="summernote">
+                        <label class="col-form-label text-md-right col-12 col-md-3 col-lg-3">Content</label>
+                        <div class="col-sm-12 col-md-7">
+                          <textarea name="content" class="form-control summernote"><%= e.content %></textarea>
+                        </div>
+                      </div>
+                      <div class="form-group row mb-4">
+                        <label class="col-form-label text-md-right col-12 col-md-3 col-lg-3"></label>
+                        <div class="col-sm-12 col-md-7">
+                          <button class="btn btn-primary" type="submit">Submit</button>
+                        </div>
+                      </div>
+                    </form>
+                    </div>
+                  </div>
+                </div>
+              </div>
+        </section>
+        <% }) %>
+        <% } else { %>
+          <div class="card-body">
+              No Slides Available
+          </div>
+      <% } %>
+
     </div>
     <div class="card shadow mb-4">
         <div class="card-header py-3">
@@ -22,32 +69,73 @@
             <div class="row">
                 <div class="col-8">
                     <div class="row">
-                        <% sliders.forEach(e => { %>
+                        <% if(sliders && sliders.length) { %>
+                        <% sliders.forEach((e, index, )=> { %>
                           <div class="col-4 mb-3">
                             <div class="image-container rounded-lg overflow-hidden border border-primary mb-2" style="padding-top: 56.25%; position: relative;">
                               <img src="http://localhost:8000/uploads/sliders/<%= e.name %>" alt="Slider" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;">
                             </div>
                             <div class="d-flex justify-content-between">
-                                <button class="btn btn-outline-primary py-0">
-                                    <i class="fas fa-arrow-left"></i>
-                                </button>
-                                <button class="btn btn-outline-danger py-0">
+                                <form action="/setting/slider/moveLeft/<%= e.id %>" method="post">
+                                    <button class="btn btn-outline-primary py-0" <% if (index === 0 ) {%>disabled<% } %>>
+                                      <i class="fas fa-arrow-left"></i>
+                                    </button>
+                                  </form>
+                                <a href="/setting/slider/<%= e.id %>" class="btn btn-outline-danger py-0" data-toggle="modal" data-target="#exampleModal<%= e.id %>">
                                     <i class="fas fa-trash"></i>
-                                </button>
-                                <button class="btn btn-outline-primary py-0">
-                                    <i class="fas fa-arrow-right"></i>
-                                </button>
+                                </a>
+                                
+                                <!-- Modal -->
+                                <div class="modal fade" id="exampleModal<%= e.id %>" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                    <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                        <h5 class="modal-title" id="exampleModalLabel">Hapus Data</h5>
+                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                        </div>
+                                        <div class="modal-body">
+                                        Anda yakin ingin menghapus data ini?
+                                        </div>
+                                        <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
+                                        
+                                        <a href="/setting/slider/delete/<%= e.id %>" type="button" class="btn btn-danger">Hapus</a>
+                                        
+                                        </div>
+                                    </div>
+                                    </div>
+                                </div>
+
+                                <% if (index === sliders.length - 1) { %>
+                                    <button class="btn btn-outline-primary py-0" disabled>
+                                      <i class="fas fa-arrow-right"></i>
+                                    </button>
+                                  <% } else { %>
+                                <form action="/setting/slider/moveRight/<%= e.id %>" method="post">
+                                    <button class="btn btn-outline-primary py-0">
+                                      <i class="fas fa-arrow-right"></i>
+                                    </button>
+                                  </form>
+                                  <% } %>
                             </div>
                           </div>
                         <% }); %>
-                      </div>                      
+                        <% } else { %>
+                            <div class="card-body">
+                                No Slides Available
+                            </div>
+                        <% } %>
+                      </div>       
+                                     
                 </div>
                 <div class="col-4">
                     <form action="/setting/slider/add" method="post" enctype="multipart/form-data">
                         <div class="input-group mb-3">
                             <div class="custom-file">
-                                <input type="file" class="custom-file-input" id="slider" name="slider">
-                                <label class="custom-file-label" for="slider">Choose file</label>
+                              <input type="file" class="custom-file-input" id="slider" name="slider" onchange="updateFileName()">
+                              <label class="custom-file-label" for="slider" id="sliderFileName">Choose file</label>
                             </div>
                         </div>
                         <div class="text-right">
@@ -78,3 +166,27 @@
         </div>
     </div>   
 </div>
+<script>
+  
+        $('.summernote').summernote({
+      placeholder: 'Silahkan isi teks anda disini',
+      tabsize: 2,
+      height: 120,
+      toolbar: [
+        ['style', ['style']],
+        ['font', ['bold', 'underline', 'clear']],
+        ['color', ['color']],
+        ['para', ['ul', 'ol', 'paragraph']],
+        ['table', ['table']],
+        ['insert', ['link', 'picture']],
+        ['view', ['fullscreen', 'codeview', 'help']]
+      ]
+    });
+
+    function updateFileName() {
+        const fileInput = document.getElementById('slider');
+        const fileNameLabel = document.getElementById('sliderFileName');
+        fileNameLabel.textContent = fileInput.files[0] ? fileInput.files[0].name : 'Choose file';
+    };
+
+  </script>

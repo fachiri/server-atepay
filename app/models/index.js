@@ -25,6 +25,7 @@ db.role = require("../models/role.model.js")(sequelize, Sequelize);
 db.slider = require("../models/slider.model.js")(sequelize, Sequelize);
 db.bill = require("../models/bill.model.js")(sequelize, Sequelize);
 db.payment = require("../models/payment.model.js")(sequelize, Sequelize);
+db.page = require("../models/page.model.js")(sequelize, Sequelize);
 
 db.role.belongsToMany(db.user, {
   through: "user_roles"
@@ -32,15 +33,8 @@ db.role.belongsToMany(db.user, {
 db.user.belongsToMany(db.role, {
   through: "user_roles"
 });
-db.bill.belongsTo(db.payment, {
-  foreignKey: 'link_id', // Name of the foreign key field in the bill table
-  targetKey: 'bill_link_id', // Name of the target key field in the payment table
-});
-
-db.payment.hasMany(db.bill, {
-  foreignKey: 'link_id', // Name of the foreign key field in the bill table
-  sourceKey: 'bill_link_id', // Name of the source key field in the payment table
-});
+db.bill.belongsTo(db.payment);
+db.payment.hasMany(db.bill);
 
 db.ROLES = ["user", "admin", "moderator"];
 
