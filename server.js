@@ -1,11 +1,12 @@
 const express = require("express");
 const cors = require("cors");
 const cookieSession = require("cookie-session");
-const expressLayouts = require('express-ejs-layouts');
-const flash = require('connect-flash'); 
+const expressLayouts = require("express-ejs-layouts");
+const flash = require("connect-flash");
 const session = require("express-session");
-const ngrok = require('ngrok');
-require('dotenv').config();
+const bcrypt = require("bcryptjs");
+const ngrok = require("ngrok");
+require("dotenv").config();
 
 const app = express();
 
@@ -22,33 +23,36 @@ app.use(express.urlencoded({ limit: "10mb", extended: true }));
 //   }),
 // );
 
-app.set('views', './app/views');
-app.set('view engine', 'ejs');
+app.set("views", "./app/views");
+app.set("view engine", "ejs");
 app.use(expressLayouts);
 app.use(express.static(__dirname + "/app/public"));
 
-app.use(session({
-  secret: process.env.SECRET,
-  resave: false,
-  saveUninitialized: false
-}));
+app.use(
+  session({
+    secret: process.env.SECRET,
+    resave: false,
+    saveUninitialized: false,
+  })
+);
 
 app.use(flash());
 
 app.use((req, res, next) => {
-  res.locals.alert = req.flash('alert');
-  res.locals.message = req.flash('message');
+  res.locals.alert = req.flash("alert");
+  res.locals.message = req.flash("message");
   next();
 });
 
 const db = require("./app/models");
 const Role = db.role;
 const Page = db.page;
+const User = db.user;
 
-db.sequelize.sync({ alter: true });
+db.sequelize.sync();
 
 app.get("/", (req, res) => {
-  res.render('../views/page/landing', {layout: 'layout/master3'})
+  res.render("../views/page/landing", { layout: "layout/master3" });
 });
 
 const startServer = async () => {
@@ -58,7 +62,7 @@ const startServer = async () => {
       addr: process.env.PORT,
     });
     console.log("Ngrok URL:", url);
-    app.listen(process.env.PORT, () => {
+    app.listen(process.env.PORT, "0.0.0.0", () => {
       console.log(`Server URL: http://localhost:${process.env.PORT}`);
     });
   } catch (error) {
@@ -68,7 +72,7 @@ const startServer = async () => {
 
 function initial() {
   try {
-    console.log('-----seed')
+    console.log("-----seed");
     Role.findOrCreate({
       where: { id: 1 },
       defaults: { name: "user" },
@@ -76,32 +80,55 @@ function initial() {
 
     Role.findOrCreate({
       where: { id: 2 },
-      defaults: { name: "moderator" },
-    });
-
-    Role.findOrCreate({
-      where: { id: 3 },
       defaults: { name: "admin" },
     });
     Page.findOrCreate({
       where: { id: 1 },
-      defaults: { judul: "Halaman Informasi" , url: "/informasi", content: "Halaman Informasi" },
+      defaults: {
+        judul: "Halaman Informasi",
+        url: "/informasi",
+        content: "Halaman Informasi",
+      },
     });
     Page.findOrCreate({
       where: { id: 2 },
-      defaults: { judul: "Halaman Tentang" , url: "/tentang", content: "Halaman Tentang" },
+      defaults: {
+        judul: "Halaman Tentang",
+        url: "/tentang",
+        content: "Halaman Tentang",
+      },
     });
     Page.findOrCreate({
       where: { id: 3 },
-      defaults: { judul: "Halaman Bantuan" , url: "/bantuan", content: "Halaman Bantuan" },
+      defaults: {
+        judul: "Halaman Bantuan",
+        url: "/bantuan",
+        content: "Halaman Bantuan",
+      },
     });
     Page.findOrCreate({
       where: { id: 4 },
-      defaults: { judul: "Halaman Faq" , url: "/faq", content: "Halaman Faq" },
+      defaults: { judul: "Halaman Faq", url: "/faq", content: "Halaman Faq" },
     });
     Page.findOrCreate({
       where: { id: 5 },
-      defaults: { judul: "Halaman Hubungi" , url: "/hubungi", content: "Halaman Hubungi" },
+      defaults: {
+        judul: "Halaman Hubungi",
+        url: "/hubungi",
+        content: "Halaman Hubungi",
+      },
+    });
+
+    User.findOrCreate({
+      where: { id: 1 },
+      defaults: {
+        name: "admin",
+        email: "admin@gmail.com",
+        password: bcrypt.hashSync("admin", 8),
+        phone: "628123456789",
+      },
+    }).then((user) => {
+      user[0].setRoles([2]);
     });
 
     console.log("Roles created or already exist.");
