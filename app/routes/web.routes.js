@@ -1,8 +1,5 @@
-const controller = require("../controllers/web.controller");
+const controllers = require("../controllers/web.controller");
 const multer = require("multer");
-const db = require("../models");
-const session = require("express-session");
-const Page = db.page;
 
 // Konfigurasi penyimpanan file
 const storage = multer.diskStorage({
@@ -53,44 +50,45 @@ module.exports = async (app) => {
     res.header("Access-Control-Allow-Headers", "Origin, Content-Type, Accept");
     next();
   });
-  app.use(session());
 
-  // public
-  const pages = await Page.findAll();
-  for (const e of pages) {
-    console.log(e.url.split("/")[1]);
-    app.get(e.url, controller[e.url.split("/")[1]]);
-  }
+  app.get("/", (req, res) => {
+    res.render("../views/page/landing", {
+      layout: "layout/master3",
+      title: "Atepay",
+      url: "/",
+    });
+  });
 
   app.get("/dashboard", authenticate, (req, res) => {
     res.render("../views/page/index", {
       title: "Dashboard",
       layout: "layout/master",
+      url: "/dashboard",
     });
   });
 
   // setting
-  app.get("/setting", authenticate, controller.setting);
+  app.get("/setting", authenticate, controllers.setting);
   app.post(
     "/setting/slider/add",
     upload.single("slider"),
-    controller.sliderAdd
+    controllers.sliderAdd
   );
-  app.get("/setting/slider/delete/:id", authenticate, controller.sliderDelete);
+  app.get("/setting/slider/delete/:id", authenticate, controllers.sliderDelete);
   app.post(
     "/setting/slider/moveLeft/:id",
     authenticate,
-    controller.sliderMoveLeft
+    controllers.sliderMoveLeft
   );
   app.post(
     "/setting/slider/moveRight/:id",
     authenticate,
-    controller.sliderMoveRight
+    controllers.sliderMoveRight
   );
   app.post(
     "/setting/pages/updateContent/:id",
     authenticate,
-    controller.updateContent
+    controllers.updateContent
   );
 
   app.get("/login", (req, res) => {
@@ -101,5 +99,13 @@ module.exports = async (app) => {
       layout: "layout/master2",
     });
   });
-  app.post("/login", controller.login);
+  app.post("/login", controllers.login);
+  app.get("/logout", controllers.logout);
+
+  // redirect_url
+  app.get("/redirect", (req, res) => {
+    res.redirect("atepay://");
+  });
+
+  app.get("/:url", controllers.page);
 };

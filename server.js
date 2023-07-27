@@ -51,17 +51,8 @@ const User = db.user;
 
 db.sequelize.sync();
 
-app.get("/", (req, res) => {
-  res.render("../views/page/landing", { layout: "layout/master3" });
-});
-
 const startServer = async () => {
   try {
-    const url = await ngrok.connect({
-      proto: "http",
-      addr: process.env.PORT,
-    });
-    console.log("Ngrok URL:", url);
     app.listen(process.env.PORT, "0.0.0.0", () => {
       console.log(`Server URL: http://localhost:${process.env.PORT}`);
     });
@@ -70,7 +61,7 @@ const startServer = async () => {
   }
 };
 
-function initial() {
+function seed() {
   try {
     console.log("-----seed");
     Role.findOrCreate({
@@ -137,12 +128,10 @@ function initial() {
   }
 }
 
-(async () => {
-  initial();
-  require("./app/routes/auth.routes")(app);
-  require("./app/routes/user.routes")(app);
-  require("./app/routes/web.routes")(app);
-  require("./app/routes/payment.routes")(app);
-  require("./app/routes/callback.routes")(app);
-  await startServer();
-})();
+seed();
+require("./app/routes/web.routes")(app);
+require("./app/routes/auth.routes")(app);
+require("./app/routes/user.routes")(app);
+require("./app/routes/payment.routes")(app);
+require("./app/routes/callback.routes")(app);
+startServer();

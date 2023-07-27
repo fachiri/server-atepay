@@ -1,38 +1,8 @@
-const { where } = require("sequelize");
 const bcrypt = require("bcryptjs");
 const db = require("../models");
 const User = db.user;
 const Slider = db.slider;
 const Page = db.page;
-
-// Page.findAll()
-//   .then((pages) => {
-//     for (const e of pages) {
-//       exports[e.url.split('/')[1]] = async (req, res) => {
-//         res.render('page/about', { title: e.title, layout: 'layout/master3', content: e.content });
-//       }
-//     }
-//   })
-//   .catch((error) => {
-//     console.log(error)
-//   })
-
-Page.findAll()
-  .then((pages) => {
-    pages.forEach((e) => {
-      exports[e.url.split("/")[1]] = async (req, res) => {
-        res.render("page/about", {
-          title: e.title,
-          layout: "layout/master3",
-          content: e.content,
-          pages,
-        });
-      };
-    });
-  })
-  .catch((error) => {
-    console.log(error);
-  });
 
 exports.setting = async (req, res) => {
   const page = "../views/page/setting";
@@ -171,7 +141,7 @@ exports.sliderMoveLeft = async (req, res) => {
 exports.updateContent = async (req, res) => {
   try {
     const id = req.params.id;
-    const newUrl = req.body.url;
+    const newJudul = req.body.judul;
     const newContent = req.body.content;
 
     const page = await Page.findByPk(id);
@@ -180,14 +150,10 @@ exports.updateContent = async (req, res) => {
       return res.status(404).json({ error: "Page not found" });
     }
 
-    // page.url = newUrl;
-    // page.content = newContent;
-    await page.update({ url: newUrl, content: newContent });
-    // await page.save();
+    await page.update({ judul: newJudul, content: newContent });
 
     req.flash("alert", "success");
     req.flash("message", "Data berhasil diubah.");
-    console.log("----------->console", newContent, newUrl);
   } catch (error) {
     req.flash("alert", "danger");
     req.flash("message", "Gagal mengubah data,");
@@ -232,4 +198,26 @@ exports.login = async (req, res) => {
 
     return res.redirect("/login");
   }
+};
+
+exports.logout = (req, res) => {
+  req.session.destroy();
+  return res.redirect("/login");
+};
+
+exports.page = async (req, res) => {
+  const page = await Page.findOne({
+    where: {
+      url: `/${req.params.url}`,
+    },
+  });
+
+  if (!page) return res.render("../views/page/404", { layout: false });
+
+  const title = page.judul;
+  const url = page.url;
+  const layout = "layout/master3";
+  const pages = await Page.findAll();
+
+  res.render("../views/page/about", { title, layout, page, pages, url });
 };
