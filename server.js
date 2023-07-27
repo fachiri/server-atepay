@@ -4,13 +4,10 @@ const cookieSession = require("cookie-session");
 const expressLayouts = require('express-ejs-layouts');
 const flash = require('connect-flash'); 
 const session = require("express-session");
+const ngrok = require('ngrok');
 require('dotenv').config();
 
 const app = express();
-
-const useNgrok = process.env.USE_NGROK === "true";
-const port = useNgrok ? 
-4000 : process.env.PORT;
 
 app.use(cors());
 app.use(express.json({ limit: "10mb" }));
@@ -48,9 +45,14 @@ const db = require("./app/models");
 const Role = db.role;
 const Page = db.page;
 
+<<<<<<< HEAD
 console.log('----sinc')
 db.sequelize.sync();
 // db.sequelize.sync({ alter: true});
+=======
+// db.sequelize.sync();
+db.sequelize.sync({ alter: true});
+>>>>>>> cf5ed5db31f9842b53e1acb9bc47b5c58e368d29
 
 app.get("/", (req, res) => {
   res.render('../views/page/landing', {layout: 'layout/master3'})
@@ -61,9 +63,11 @@ require("./app/routes/auth.routes")(app);
 require("./app/routes/user.routes")(app);
 require("./app/routes/web.routes")(app);
 require("./app/routes/payment.routes")(app);
+require("./app/routes/callback.routes")(app);
 
 const startServer = async () => {
   try {
+<<<<<<< HEAD
     if (useNgrok) {
       const url = await ngrok.connect({
         proto: "http",
@@ -76,6 +80,15 @@ const startServer = async () => {
 
     app.listen(port, () => {
       console.log(`Server URL: http://localhost:${port}`);
+=======
+    const url = await ngrok.connect({
+      proto: "http",
+      addr: process.env.PORT,
+    });
+    console.log("Ngrok URL:", url);
+    app.listen(process.env.PORT, () => {
+      console.log(`Server URL: http://localhost:${process.env.PORT}`);
+>>>>>>> cf5ed5db31f9842b53e1acb9bc47b5c58e368d29
     });
   } catch (error) {
     console.error("Error starting server:", error);
