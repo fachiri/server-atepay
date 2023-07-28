@@ -8,10 +8,10 @@ const Op = db.Sequelize.Op;
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 
-const twilio = require('twilio');
+const twilio = require("twilio");
 const { where } = require("sequelize");
 
-const SECRET = process.env.SECRET
+const SECRET = process.env.SECRET;
 
 exports.signup = async (req, res) => {
   // Save User to Database
@@ -73,7 +73,7 @@ exports.signin = async (req, res) => {
     }
 
     return res.status(200).send({
-      message: 'Login berhasil',
+      message: "Login berhasil",
       user: {
         id: user.id,
         name: user.name,
@@ -81,7 +81,6 @@ exports.signin = async (req, res) => {
         phone: user.phone,
         roles: authorities,
       },
-
     });
   } catch (error) {
     return res.status(500).send({ message: error.message });
@@ -92,7 +91,7 @@ exports.signout = async (req, res) => {
   try {
     req.session = null;
     return res.status(200).send({
-      message: "Anda telah Logout!"
+      message: "Anda telah Logout!",
     });
   } catch (err) {
     this.next(err);
@@ -101,17 +100,18 @@ exports.signout = async (req, res) => {
 //sendotp
 exports.sendotp = async (req, res) => {
   const { phoneNumber, id } = req.body;
-  console.log(phoneNumber);
-  console.log(id);
 
   // Generate random 6-digit OTP
   const otp = Math.floor(100000 + Math.random() * 900000);
 
-  const user = await User.update({ code: otp }, {
-    where: {
-      id
+  await User.update(
+    { code: otp },
+    {
+      where: {
+        id,
+      },
     }
-  });
+  );
 
   // Send OTP via SMS
   const client = twilio(
@@ -125,124 +125,121 @@ exports.sendotp = async (req, res) => {
       to: phoneNumber,
     })
     .then((message) => {
-      res.status(200).json({ message: 'Kode OTP Telah Terkirim!' });
+      res.status(200).json({ message: "Kode OTP Telah Terkirim!" });
     })
     .catch((error) => {
-      res.status(500).json({ message: 'Gagal Mengirimkan Kode OTP!' });
+      res.status(500).json({ message: "Gagal Mengirimkan Kode OTP!" });
     });
-}
+};
+
 // verifyotp
-exports.verifytoken = async(req, res) => {
-  const {id, code} = req.body;
+exports.verifytoken = async (req, res) => {
+  const { id, code } = req.body;
   try {
     const user = await User.findOne({
       where: {
         id,
-        code
+        code,
       },
     });
-  
-    if (!user) {
-      return res.status(401).json({message: 'Invalid OTP!'})
-    }
-    const token = jwt.sign(
-      { id: user.id },
-      SECRET,
+
+    if (!user) return res.status(401).json({ message: "Invalid OTP!" });
+
+    const _1HOUR = 3600; //seconds
+    const token = jwt.sign({ id: user.id }, SECRET, {
+      algorithm: "HS256",
+      allowInsecureKeySizes: true,
+      expiresIn: _1HOUR * 24,
+    });
+
+    await User.update(
+      { code: null },
       {
-        algorithm: 'HS256',
-        allowInsecureKeySizes: true,
-        expiresIn: 86400, // 24 hours
+        where: {
+          id,
+        },
       }
     );
-  
-    
-    await User.update({ code: null }, {
-      where: {
-        id
-      }
-    });
     res.status(200).json({
-      message: 'Verifikasi Berhasil!',
-      token
-    })
-  
+      message: "Verifikasi Berhasil!",
+      token,
+    });
   } catch (error) {
     return res.status(500).send({ message: error.message });
   }
-}
+};
+
 //buatpin
 exports.createpin = async (req, res) => {
-  const {id , pin} = req.body
+  const { id, pin } = req.body;
   try {
     const user = await User.findOne({
       where: {
-        id
-      }
+        id,
+      },
     });
     if (!user) {
-      return res.status(404).json({ message: 'User tidak ditemukan!' });
+      return res.status(404).json({ message: "User tidak ditemukan!" });
     }
     const hashedPin = await bcrypt.hash(pin, 8);
-    await user.update({ pin: hashedPin, 
-      where:{
-        id
-    }});
-    return res.status(200).json({ message: "Pin berhasil dibuat!"})
-
+    await user.update({
+      pin: hashedPin,
+      where: {
+        id,
+      },
+    });
+    return res.status(200).json({ message: "Pin berhasil dibuat!" });
   } catch (error) {
     return res.status(500).send({ message: error.message });
   }
-}
+};
 
 //gantipin
 exports.resetpin = async (req, res) => {
-  const {id, pin} = req.body
+  const { id, pin } = req.body;
   try {
-
     const user = await User.findOne({
       where: {
         id,
-      }
+      },
     });
 
     if (!user) {
-      return res.status(404).json({ message: 'User tidak ditemukan!' });
+      return res.status(404).json({ message: "User tidak ditemukan!" });
     }
 
     const hashedPin = await bcrypt.hash(pin, 8);
-    await user.update({ pin: hashedPin});
+    await user.update({ pin: hashedPin });
 
-    return res.status(200).json({ message: "Pin berhasil diganti!"})
+    return res.status(200).json({ message: "Pin berhasil diganti!" });
   } catch (error) {
-    return res.status(500).send({ message: error.message })
+    return res.status(500).send({ message: error.message });
   }
-}
-
+};
 
 //resetpassword
 exports.resetpassword = async (req, res) => {
-  const { id, newPassword} = req.body
+  const { id, newPassword } = req.body;
   try {
     const user = await User.findOne({
-      where:{
-        id
-      }})
+      where: {
+        id,
+      },
+    });
 
-      if (!user) {
-        return res.status(404).json({ message: 'User tidak ditemukan!' });
-      }
-  
-      const newHasPassword = await bcrypt.hash(newPassword, 8);
+    if (!user) {
+      return res.status(404).json({ message: "User tidak ditemukan!" });
+    }
 
-      await user.update({ password: newHasPassword});
-  
-      return res.status(200).json({ message: "Password berhasil diganti!"})
+    const newHasPassword = await bcrypt.hash(newPassword, 8);
 
+    await user.update({ password: newHasPassword });
+
+    return res.status(200).json({ message: "Password berhasil diganti!" });
   } catch (error) {
-    return res.status(500).send({ message: error.message })
+    return res.status(500).send({ message: error.message });
   }
-}
-
+};
 
 //checktoken
 exports.checktoken = async (req, res) => {

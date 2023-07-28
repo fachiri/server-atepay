@@ -10,8 +10,8 @@ const sequelize = new Sequelize(
       max: +process.env.DB_POOL_MAX,
       min: +process.env.DB_POOL_MIN,
       acquire: +process.env.DB_POOL_ACQUIRE,
-      idle: +process.env.DB_POOL_IDLE
-    }
+      idle: +process.env.DB_POOL_IDLE,
+    },
   }
 );
 
@@ -28,14 +28,14 @@ db.bill = require("../models/bill.model.js")(sequelize, Sequelize);
 db.payment = require("../models/payment.model.js")(sequelize, Sequelize);
 
 db.role.belongsToMany(db.user, {
-  through: "user_roles"
+  through: "user_roles",
 });
 db.user.belongsToMany(db.role, {
-  through: "user_roles"
+  through: "user_roles",
 });
 db.bill.belongsTo(db.payment);
 db.payment.hasOne(db.bill);
 
-db.ROLES = ["user", "admin", "moderator"];
+db.ROLES = ["user", "admin"];
 
 module.exports = db;

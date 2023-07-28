@@ -1,11 +1,12 @@
 const express = require("express");
 const cors = require("cors");
 const cookieSession = require("cookie-session");
-const expressLayouts = require('express-ejs-layouts');
-const flash = require('connect-flash'); 
+const expressLayouts = require("express-ejs-layouts");
+const flash = require("connect-flash");
 const session = require("express-session");
-const ngrok = require('ngrok');
-require('dotenv').config();
+const bcrypt = require("bcryptjs");
+const ngrok = require("ngrok");
+require("dotenv").config();
 
 const app = express();
 
@@ -22,22 +23,24 @@ app.use(express.urlencoded({ limit: "10mb", extended: true }));
 //   }),
 // );
 
-app.set('views', './app/views');
-app.set('view engine', 'ejs');
+app.set("views", "./app/views");
+app.set("view engine", "ejs");
 app.use(expressLayouts);
 app.use(express.static(__dirname + "/app/public"));
 
-app.use(session({
-  secret: process.env.SECRET,
-  resave: false,
-  saveUninitialized: false
-}));
+app.use(
+  session({
+    secret: process.env.SECRET,
+    resave: false,
+    saveUninitialized: false,
+  })
+);
 
 app.use(flash());
 
 app.use((req, res, next) => {
-  res.locals.alert = req.flash('alert');
-  res.locals.message = req.flash('message');
+  res.locals.alert = req.flash("alert");
+  res.locals.message = req.flash("message");
   next();
 });
 
