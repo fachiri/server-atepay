@@ -1,5 +1,6 @@
 const db = require("../models");
 const config = require("../config/auth.config");
+const sendEmail = require("../lib/nodemailer");
 const User = db.user;
 const Role = db.role;
 const getEnv = db.getEnv;
@@ -120,8 +121,11 @@ const OTP_WHATSAPP = async (phoneNumber, otp) => {
 
 // FIXME: implement this
 const OTP_EMAIL = async (email, otp) => {
-  return new Promise((resolve, reject) => {
-    resolve("success");
+  return sendEmail({
+    to: email,
+    subject: "Kode OTP",
+    text: `Kode OTP anda adalah : ${otp}`,
+    html: `<p>Kode OTP anda adalah : <b>${otp}</b></p>`,
   });
 };
 
@@ -156,7 +160,13 @@ exports.sendotp = async (req, res) => {
       break;
 
     case OTP.EMAIL:
-      OTP_EMAIL(email, otp);
+      OTP_EMAIL(email, otp)
+        .then((message) => {
+          res.status(200).json({ message: "Kode OTP Telah Terkirim!" });
+        })
+        .catch((error) => {
+          res.status(500).json({ message: "Gagal Mengirimkan Kode OTP!" });
+        });
       break;
   }
 };
