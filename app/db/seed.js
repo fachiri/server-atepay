@@ -39,7 +39,6 @@ try {
     where: { id: 5 },
     defaults: { judul: "Halaman Hubungi" , url: "/hubungi", content: "Halaman Hubungi" },
   });
-  console.log("--- Seed Selesai");
 } catch (error) {
   console.error("Error creating roles:", error);
 }

@@ -48,3 +48,36 @@ exports.myBills = async (req, res) => {
     res.status(500).send({ error: error.message });
   }
 };
+
+exports.myBalance = async (req, res) => {
+  try {
+    const { user_id } = req.query
+    if (!user_id) {
+      throw new Error("Query user_id tidak ditemukan!");
+    }
+    const bills = await Bill.findAll({
+      where: {
+        user_id,
+      },
+      include: {
+        model: db.payment,
+        as: 'payment',
+      },
+    })
+    let balance = 0
+    bills.forEach(e => {
+      if(e.payment.status == 'SUCCESSFUL') {
+        if(e.payment.type == 'DEBIT') {
+          balance = balance + e.payment.amount
+        }
+        if(e.payment.type == 'KREDIT') {
+          balance = balance - e.payment.amount
+        }
+      }
+    });
+    res.status(200).send({balance})
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({ error: error.message });
+  }
+}
