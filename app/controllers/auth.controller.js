@@ -101,25 +101,32 @@ exports.signout = async (req, res) => {
 const OTP_SMS = async (phoneNumber, otp) => {
   const TWILIO_ACCOUNT_SID = await getEnv("TWILIO_ACCOUNT_SID");
   const TWILIO_AUTH_TOKEN = await getEnv("TWILIO_AUTH_TOKEN");
-  const TWILIO_PHONE_NUMBER = await getEnv("TWILIO_PHONE_NUMBER");
+  const TWILIO_SMS_NUMBER = await getEnv("TWILIO_SMS_NUMBER");
 
   const client = twilio(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN);
 
   return client.messages.create({
     body: `Kode OTP anda adalah : ${otp}`,
-    from: TWILIO_PHONE_NUMBER,
+    from: TWILIO_SMS_NUMBER,
     to: phoneNumber,
   });
 };
 
 // FIXME: implement this
 const OTP_WHATSAPP = async (phoneNumber, otp) => {
-  return new Promise((resolve, reject) => {
-    resolve("success");
+  const TWILIO_ACCOUNT_SID = await getEnv("TWILIO_ACCOUNT_SID");
+  const TWILIO_AUTH_TOKEN = await getEnv("TWILIO_AUTH_TOKEN");
+  const TWILIO_WA_NUMBER = await getEnv("TWILIO_WA_NUMBER");
+
+  const client = twilio(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN);
+
+  return client.messages.create({
+    body: `Kode OTP anda adalah : ${otp}`,
+    from: `whatsapp:${TWILIO_WA_NUMBER}`,
+    to: `whatsapp:${phoneNumber}`,
   });
 };
 
-// FIXME: implement this
 const OTP_EMAIL = async (email, otp) => {
   return sendEmail({
     to: email,
@@ -131,7 +138,7 @@ const OTP_EMAIL = async (email, otp) => {
 
 //sendotp
 exports.sendotp = async (req, res) => {
-  const { phoneNumber, email, id, type } = req.body;
+  const { contact, id, type } = req.body;
 
   // Generate random 6-digit OTP
   const otp = Math.floor(100000 + Math.random() * 900000);
@@ -140,7 +147,7 @@ exports.sendotp = async (req, res) => {
 
   switch (type) {
     case OTP.SMS:
-      OTP_SMS(phoneNumber, otp)
+      OTP_SMS(contact, otp)
         .then((message) => {
           res.status(200).json({ message: "Kode OTP Telah Terkirim!" });
         })
@@ -150,7 +157,7 @@ exports.sendotp = async (req, res) => {
       break;
 
     case OTP.WHATSAPP:
-      OTP_WHATSAPP(phoneNumber, otp)
+      OTP_WHATSAPP(contact, otp)
         .then((message) => {
           res.status(200).json({ message: "Kode OTP Telah Terkirim!" });
         })
@@ -160,7 +167,7 @@ exports.sendotp = async (req, res) => {
       break;
 
     case OTP.EMAIL:
-      OTP_EMAIL(email, otp)
+      OTP_EMAIL(contact, otp)
         .then((message) => {
           res.status(200).json({ message: "Kode OTP Telah Terkirim!" });
         })

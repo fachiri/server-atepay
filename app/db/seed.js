@@ -1,4 +1,5 @@
 require("dotenv").config();
+const bcrypt = require("bcryptjs");
 const db = require("../models");
 const Role = db.role;
 const Page = db.page;
@@ -113,8 +114,16 @@ try {
   Env.findOrCreate({
     where: { id: 6 },
     defaults: {
-      name: "TWILIO_PHONE_NUMBER",
-      value: process.env.TWILIO_PHONE_NUMBER,
+      name: "TWILIO_SMS_NUMBER",
+      value: process.env.TWILIO_SMS_NUMBER,
+    },
+  });
+
+  Env.findOrCreate({
+    where: { id: 7 },
+    defaults: {
+      name: "TWILIO_WA_NUMBER",
+      value: process.env.TWILIO_WA_NUMBER,
     },
   });
   console.log("--- Seed Selesai");
