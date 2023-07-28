@@ -20,6 +20,9 @@ const db = {};
 db.Sequelize = Sequelize;
 db.sequelize = sequelize;
 
+const ENV = require("./env.model.js")(sequelize, Sequelize);
+db.env = ENV.Env;
+db.getEnv = ENV.getEnv;
 db.user = require("../models/user.model.js")(sequelize, Sequelize);
 db.role = require("../models/role.model.js")(sequelize, Sequelize);
 db.slider = require("../models/slider.model.js")(sequelize, Sequelize);

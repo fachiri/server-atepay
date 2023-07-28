@@ -3,11 +3,13 @@ const db = require("../models");
 const User = db.user;
 const Slider = db.slider;
 const Page = db.page;
+const Env = db.env;
 
 exports.setting = async (req, res) => {
   const page = "../views/page/setting";
   const title = "Pengaturan";
   const layout = "layout/master";
+  const envs = [];
   let sliders;
   let pages;
   try {
@@ -17,11 +19,16 @@ exports.setting = async (req, res) => {
     pages = await Page.findAll({
       id: [["id", "ASC"]],
     });
+
+    const env = await Env.findAll();
+    env.forEach((item) => {
+      envs.push({ name: item.name, value: item.value });
+    });
   } catch (error) {
     req.flash("alert", "danger");
     req.flash("message", error.message);
   }
-  res.render(page, { title, layout, sliders, pages });
+  res.render(page, { title, layout, sliders, pages, envs });
 };
 
 exports.sliderAdd = async (req, res) => {
@@ -220,4 +227,15 @@ exports.page = async (req, res) => {
   const pages = await Page.findAll();
 
   res.render("../views/page/about", { title, layout, page, pages, url });
+};
+
+exports.updateEnv = async (req, res) => {
+  const entries = Object.entries(req.body);
+  for (const [key, value] of entries) {
+    await Env.update({ value }, { where: { name: key } });
+  }
+
+  req.flash("alert", "success");
+  req.flash("message", "Data berhasil diubah.");
+  return res.redirect("/setting");
 };

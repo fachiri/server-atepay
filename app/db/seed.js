@@ -1,10 +1,12 @@
-require('dotenv').config();
+require("dotenv").config();
 const db = require("../models");
 const Role = db.role;
 const Page = db.page;
+const User = db.user;
+const Env = db.env;
 
 try {
-  console.log('--- Seed Mulai')
+  console.log("--- Seed Mulai");
   Role.findOrCreate({
     where: { id: 1 },
     defaults: { name: "user" },
@@ -12,32 +14,108 @@ try {
 
   Role.findOrCreate({
     where: { id: 2 },
-    defaults: { name: "moderator" },
-  });
-
-  Role.findOrCreate({
-    where: { id: 3 },
     defaults: { name: "admin" },
   });
+
   Page.findOrCreate({
     where: { id: 1 },
-    defaults: { judul: "Halaman Informasi" , url: "/informasi", content: "Halaman Informasi" },
+    defaults: {
+      judul: "Halaman Informasi",
+      url: "/informasi",
+      content: "Halaman Informasi",
+    },
   });
+
   Page.findOrCreate({
     where: { id: 2 },
-    defaults: { judul: "Halaman Tentang" , url: "/tentang", content: "Halaman Tentang" },
+    defaults: {
+      judul: "Halaman Tentang",
+      url: "/tentang",
+      content: "Halaman Tentang",
+    },
   });
+
   Page.findOrCreate({
     where: { id: 3 },
-    defaults: { judul: "Halaman Bantuan" , url: "/bantuan", content: "Halaman Bantuan" },
+    defaults: {
+      judul: "Halaman Bantuan",
+      url: "/bantuan",
+      content: "Halaman Bantuan",
+    },
   });
+
   Page.findOrCreate({
     where: { id: 4 },
-    defaults: { judul: "Halaman Faq" , url: "/faq", content: "Halaman Faq" },
+    defaults: { judul: "Halaman Faq", url: "/faq", content: "Halaman Faq" },
   });
+
   Page.findOrCreate({
     where: { id: 5 },
-    defaults: { judul: "Halaman Hubungi" , url: "/hubungi", content: "Halaman Hubungi" },
+    defaults: {
+      judul: "Halaman Hubungi",
+      url: "/hubungi",
+      content: "Halaman Hubungi",
+    },
+  });
+
+  User.findOrCreate({
+    where: { id: 1 },
+    defaults: {
+      name: "admin",
+      email: "admin@gmail.com",
+      password: bcrypt.hashSync("admin", 8),
+      phone: "628123456789",
+    },
+  }).then((user) => {
+    user[0].setRoles([2]);
+  });
+
+  Env.findOrCreate({
+    where: { id: 1 },
+    defaults: {
+      name: "FLIP_API_URL",
+      value: process.env.FLIP_API_URL,
+    },
+  });
+
+  Env.findOrCreate({
+    where: { id: 2 },
+    defaults: {
+      name: "FLIP_API_SECRET_KEY",
+      value: process.env.FLIP_API_SECRET_KEY,
+    },
+  });
+
+  Env.findOrCreate({
+    where: { id: 3 },
+    defaults: {
+      name: "FLIP_VALIDATION_TOKEN",
+      value: process.env.FLIP_VALIDATION_TOKEN,
+    },
+  });
+
+  Env.findOrCreate({
+    where: { id: 4 },
+    defaults: {
+      name: "TWILIO_ACCOUNT_SID",
+      value: process.env.TWILIO_ACCOUNT_SID,
+    },
+  });
+
+  Env.findOrCreate({
+    where: { id: 5 },
+    defaults: {
+      name: "TWILIO_AUTH_TOKEN",
+      value: process.env.TWILIO_AUTH_TOKEN,
+    },
+  });
+
+  Env.findOrCreate({
+    where: { id: 6 },
+    defaults: {
+      name: "TWILIO_PHONE_NUMBER",
+      value: process.env.TWILIO_PHONE_NUMBER,
+    },
   });
   console.log("--- Seed Selesai");
 } catch (error) {
