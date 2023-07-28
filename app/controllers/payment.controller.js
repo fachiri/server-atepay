@@ -1,6 +1,7 @@
 const axios = require('axios')
 const db = require("../models");
 const Bill = db.bill;
+const Payment = db.payment;
 
 const requestConfig = {
   headers: {
@@ -16,7 +17,8 @@ exports.createBill = async (req, res) => {
   try {
     const { user_id, payload } = req.body
     const response = await axios.post(`${process.env.FLIP_API_URL}/v2/pwf/bill`, payload, requestConfig)
-    await Bill.create({...{user_id}, ...response.data})
+    const { id } = await Payment.create({ status: 'PENDING', bill_link_id: response.data.link_id })
+    await Bill.create({...{paymentId: id}, ...{user_id}, ...response.data})
     res.send(response.data)
   } catch (error) {
     console.log(error)
@@ -35,8 +37,10 @@ exports.myBills = async (req, res) => {
         user_id
       },
       include: {
-        model: db.payment
-      }
+        model: db.payment,
+        as: 'payment',
+        // required: false
+      },
     })
     res.send(bills)
   } catch (error) {

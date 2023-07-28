@@ -1,7 +1,7 @@
 const controller = require("../controllers/web.controller");
 const multer = require('multer');
-  const db = require("../models");
-  const Page = db.page;
+const db = require("../models");
+const Page = db.page;
 
 // Konfigurasi penyimpanan file
 const storage = multer.diskStorage({

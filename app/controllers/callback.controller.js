@@ -9,7 +9,7 @@ exports.acceptPayment = async (req, res) => {
     }
     const { data, token } = req.body
     paymentData = JSON.parse(data)
-    await Payment.create({
+    await Payment.update({
       payment_id: paymentData.id,
       bill_link: paymentData.bill_link,
       bill_link_id: paymentData.bill_link_id,
@@ -21,6 +21,11 @@ exports.acceptPayment = async (req, res) => {
       sender_bank_type: paymentData.sender_bank_type,
       token,
       created_at: paymentData.created_at,
+      type: 'DEBIT'
+    }, { 
+      where: {
+        bill_link_id: paymentData.bill_link_id
+      }
     })
     res.send(req.body)
   } catch (error) {

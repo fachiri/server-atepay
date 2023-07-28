@@ -41,11 +41,11 @@ app.use((req, res, next) => {
   next();
 });
 
-const db = require("./app/models");
-const Role = db.role;
-const Page = db.page;
-
-db.sequelize.sync({ alter: true });
+require("./app/routes/auth.routes")(app);
+require("./app/routes/user.routes")(app);
+require("./app/routes/web.routes")(app);
+require("./app/routes/payment.routes")(app);
+require("./app/routes/callback.routes")(app);
 
 app.get("/", (req, res) => {
   res.render('../views/page/landing', {layout: 'layout/master3'})
@@ -53,69 +53,14 @@ app.get("/", (req, res) => {
 
 const startServer = async () => {
   try {
-    const url = await ngrok.connect({
-      proto: "http",
-      addr: process.env.PORT,
-    });
-    console.log("Ngrok URL:", url);
     app.listen(process.env.PORT, () => {
       console.log(`Server URL: http://localhost:${process.env.PORT}`);
     });
   } catch (error) {
     console.error("Error starting server:", error);
   }
-};
-
-function initial() {
-  try {
-    console.log('-----seed')
-    Role.findOrCreate({
-      where: { id: 1 },
-      defaults: { name: "user" },
-    });
-
-    Role.findOrCreate({
-      where: { id: 2 },
-      defaults: { name: "moderator" },
-    });
-
-    Role.findOrCreate({
-      where: { id: 3 },
-      defaults: { name: "admin" },
-    });
-    Page.findOrCreate({
-      where: { id: 1 },
-      defaults: { judul: "Halaman Informasi" , url: "/informasi", content: "Halaman Informasi" },
-    });
-    Page.findOrCreate({
-      where: { id: 2 },
-      defaults: { judul: "Halaman Tentang" , url: "/tentang", content: "Halaman Tentang" },
-    });
-    Page.findOrCreate({
-      where: { id: 3 },
-      defaults: { judul: "Halaman Bantuan" , url: "/bantuan", content: "Halaman Bantuan" },
-    });
-    Page.findOrCreate({
-      where: { id: 4 },
-      defaults: { judul: "Halaman Faq" , url: "/faq", content: "Halaman Faq" },
-    });
-    Page.findOrCreate({
-      where: { id: 5 },
-      defaults: { judul: "Halaman Hubungi" , url: "/hubungi", content: "Halaman Hubungi" },
-    });
-
-    console.log("Roles created or already exist.");
-  } catch (error) {
-    console.error("Error creating roles:", error);
-  }
 }
 
 (async () => {
-  initial();
-  require("./app/routes/auth.routes")(app);
-  require("./app/routes/user.routes")(app);
-  require("./app/routes/web.routes")(app);
-  require("./app/routes/payment.routes")(app);
-  require("./app/routes/callback.routes")(app);
   await startServer();
 })();
