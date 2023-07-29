@@ -126,6 +126,30 @@ try {
       value: process.env.TWILIO_WA_NUMBER,
     },
   });
+
+  Env.findOrCreate({
+    where: { id: 8 },
+    defaults: {
+      name: "EMAIL_SERVICE",
+      value: process.env.EMAIL_SERVICE,
+    },
+  });
+
+  Env.findOrCreate({
+    where: { id: 9 },
+    defaults: {
+      name: "EMAIL",
+      value: process.env.EMAIL,
+    },
+  });
+
+  Env.findOrCreate({
+    where: { id: 10 },
+    defaults: {
+      name: "EMAIL_PASSWORD",
+      value: process.env.EMAIL_PASSWORD,
+    },
+  });
   console.log("--- Seed Selesai");
 } catch (error) {
   console.error("Error creating roles:", error);

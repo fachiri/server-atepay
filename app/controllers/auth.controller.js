@@ -1,9 +1,8 @@
 const db = require("../models");
-const config = require("../config/auth.config");
-const sendEmail = require("../lib/nodemailer");
+const getEnv = db.getEnv;
 const User = db.user;
 const Role = db.role;
-const getEnv = db.getEnv;
+const sendEmail = require("../lib/nodemailer")(getEnv);
 
 const Op = db.Sequelize.Op;
 
