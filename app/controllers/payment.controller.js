@@ -3,16 +3,21 @@ const db = require("../models");
 const { generateReferenceNumber } = require("../helpers/generator");
 const Bill = db.bill;
 const Payment = db.payment;
+const getEnv = db.getEnv;
 
-const requestConfig = {
-  headers: {
-    "Content-Type": "application/x-www-form-urlencoded",
-  },
-  auth: {
-    username: process.env.FLIP_API_SECRET_KEY,
-    password: "",
-  },
-};
+async function getRequestConfig() {
+  const FLIP_API_SECRET_KEY = await getEnv("FLIP_API_SECRET_KEY");
+
+  return {
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    auth: {
+      username: FLIP_API_SECRET_KEY,
+      password: "",
+    },
+  };
+}
 
 exports.createBill = async (req, res) => {
   try {
@@ -39,11 +44,11 @@ exports.myBills = async (req, res) => {
       },
       include: {
         model: db.payment,
-        as: 'payment',
+        as: "payment",
         // required: false
       },
-    })
-    res.send(bills)
+    });
+    res.send(bills);
   } catch (error) {
     console.log(error);
     res.status(500).send({ error: error.message });

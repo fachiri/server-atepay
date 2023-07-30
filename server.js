@@ -1,11 +1,8 @@
 const express = require("express");
 const cors = require("cors");
-const cookieSession = require("cookie-session");
 const expressLayouts = require("express-ejs-layouts");
 const flash = require("connect-flash");
 const session = require("express-session");
-const bcrypt = require("bcryptjs");
-const ngrok = require("ngrok");
 require("dotenv").config();
 
 const app = express();
@@ -13,15 +10,6 @@ const app = express();
 app.use(cors());
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ limit: "10mb", extended: true }));
-
-// app.use(
-//   cookieSession({
-//     name: "bezkoder-session",
-//     keys: [process.env.COOKIE_SECRET],
-//     httpOnly: true,
-//     sameSite: "strict",
-//   }),
-// );
 
 app.set("views", "./app/views");
 app.set("view engine", "ejs");
@@ -51,7 +39,7 @@ require("./app/routes/payment.routes")(app);
 require("./app/routes/callback.routes")(app);
 
 app.get("/", (req, res) => {
-  res.render('../views/page/landing', {layout: 'layout/master3'})
+  res.render("../views/page/landing", { layout: "layout/master3" });
 });
 
 const startServer = async () => {
@@ -62,7 +50,7 @@ const startServer = async () => {
   } catch (error) {
     console.error("Error starting server:", error);
   }
-}
+};
 
 (async () => {
   await startServer();

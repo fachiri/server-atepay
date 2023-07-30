@@ -1,7 +1,8 @@
 const db = require("../models");
-const config = require("../config/auth.config");
+const getEnv = db.getEnv;
 const User = db.user;
 const Role = db.role;
+const sendEmail = require("../lib/nodemailer")(getEnv);
 
 const Op = db.Sequelize.Op;
 
@@ -9,7 +10,7 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 
 const twilio = require("twilio");
-const { where } = require("sequelize");
+const { OTP } = require("../consts");
 
 const SECRET = process.env.SECRET;
 
@@ -47,9 +48,7 @@ exports.signup = async (req, res) => {
 exports.signin = async (req, res) => {
   try {
     const user = await User.findOne({
-      where: {
-        email: req.body.email,
-      },
+      where: { email: req.body.email },
     });
 
     if (!user) {
@@ -97,51 +96,92 @@ exports.signout = async (req, res) => {
     this.next(err);
   }
 };
+
+const OTP_SMS = async (phoneNumber, otp) => {
+  const TWILIO_ACCOUNT_SID = await getEnv("TWILIO_ACCOUNT_SID");
+  const TWILIO_AUTH_TOKEN = await getEnv("TWILIO_AUTH_TOKEN");
+  const TWILIO_SMS_NUMBER = await getEnv("TWILIO_SMS_NUMBER");
+
+  const client = twilio(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN);
+
+  return client.messages.create({
+    body: `Kode OTP anda adalah : ${otp}`,
+    from: TWILIO_SMS_NUMBER,
+    to: phoneNumber,
+  });
+};
+
+// FIXME: implement this
+const OTP_WHATSAPP = async (phoneNumber, otp) => {
+  const TWILIO_ACCOUNT_SID = await getEnv("TWILIO_ACCOUNT_SID");
+  const TWILIO_AUTH_TOKEN = await getEnv("TWILIO_AUTH_TOKEN");
+  const TWILIO_WA_NUMBER = await getEnv("TWILIO_WA_NUMBER");
+
+  const client = twilio(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN);
+
+  return client.messages.create({
+    body: `Kode OTP anda adalah : ${otp}`,
+    from: `whatsapp:${TWILIO_WA_NUMBER}`,
+    to: `whatsapp:${phoneNumber}`,
+  });
+};
+
+const OTP_EMAIL = async (email, otp) => {
+  return sendEmail({
+    to: email,
+    subject: "Kode OTP",
+    text: `Kode OTP anda adalah : ${otp}`,
+    html: `<p>Kode OTP anda adalah : <b>${otp}</b></p>`,
+  });
+};
+
 //sendotp
 exports.sendotp = async (req, res) => {
-  const { phoneNumber, id } = req.body;
+  const { contact, id, type } = req.body;
 
   // Generate random 6-digit OTP
   const otp = Math.floor(100000 + Math.random() * 900000);
 
-  await User.update(
-    { code: otp },
-    {
-      where: {
-        id,
-      },
-    }
-  );
+  await User.update({ code: otp }, { where: { id } });
 
-  // Send OTP via SMS
-  const client = twilio(
-    process.env.TWILIO_ACCOUNT_SID,
-    process.env.TWILIO_AUTH_TOKEN
-  );
-  client.messages
-    .create({
-      body: `Kode OTP anda adalah : ${otp}`,
-      from: process.env.TWILIO_PHONE_NUMBER,
-      to: phoneNumber,
-    })
-    .then((message) => {
-      res.status(200).json({ message: "Kode OTP Telah Terkirim!" });
-    })
-    .catch((error) => {
-      res.status(500).json({ message: "Gagal Mengirimkan Kode OTP!" });
-    });
+  switch (type) {
+    case OTP.SMS:
+      OTP_SMS(contact, otp)
+        .then((message) => {
+          res.status(200).json({ message: "Kode OTP Telah Terkirim!" });
+        })
+        .catch((error) => {
+          res.status(500).json({ message: "Gagal Mengirimkan Kode OTP!" });
+        });
+      break;
+
+    case OTP.WHATSAPP:
+      OTP_WHATSAPP(contact, otp)
+        .then((message) => {
+          res.status(200).json({ message: "Kode OTP Telah Terkirim!" });
+        })
+        .catch((error) => {
+          res.status(500).json({ message: "Gagal Mengirimkan Kode OTP!" });
+        });
+      break;
+
+    case OTP.EMAIL:
+      OTP_EMAIL(contact, otp)
+        .then((message) => {
+          res.status(200).json({ message: "Kode OTP Telah Terkirim!" });
+        })
+        .catch((error) => {
+          res.status(500).json({ message: "Gagal Mengirimkan Kode OTP!" });
+        });
+      break;
+  }
 };
 
 // verifyotp
 exports.verifytoken = async (req, res) => {
   const { id, code } = req.body;
   try {
-    const user = await User.findOne({
-      where: {
-        id,
-        code,
-      },
-    });
+    const user = await User.findOne({ where: { id, code } });
 
     if (!user) return res.status(401).json({ message: "Invalid OTP!" });
 
@@ -152,14 +192,7 @@ exports.verifytoken = async (req, res) => {
       expiresIn: _1HOUR * 24,
     });
 
-    await User.update(
-      { code: null },
-      {
-        where: {
-          id,
-        },
-      }
-    );
+    await User.update({ code: null }, { where: { id } });
     res.status(200).json({
       message: "Verifikasi Berhasil!",
       token,
@@ -173,20 +206,14 @@ exports.verifytoken = async (req, res) => {
 exports.createpin = async (req, res) => {
   const { id, pin } = req.body;
   try {
-    const user = await User.findOne({
-      where: {
-        id,
-      },
-    });
+    const user = await User.findOne({ where: { id } });
     if (!user) {
       return res.status(404).json({ message: "User tidak ditemukan!" });
     }
     const hashedPin = await bcrypt.hash(pin, 8);
     await user.update({
       pin: hashedPin,
-      where: {
-        id,
-      },
+      where: { id },
     });
     return res.status(200).json({ message: "Pin berhasil dibuat!" });
   } catch (error) {
@@ -198,11 +225,7 @@ exports.createpin = async (req, res) => {
 exports.resetpin = async (req, res) => {
   const { id, pin } = req.body;
   try {
-    const user = await User.findOne({
-      where: {
-        id,
-      },
-    });
+    const user = await User.findOne({ where: { id } });
 
     if (!user) {
       return res.status(404).json({ message: "User tidak ditemukan!" });
@@ -221,11 +244,7 @@ exports.resetpin = async (req, res) => {
 exports.resetpassword = async (req, res) => {
   const { id, newPassword } = req.body;
   try {
-    const user = await User.findOne({
-      where: {
-        id,
-      },
-    });
+    const user = await User.findOne({ where: { id } });
 
     if (!user) {
       return res.status(404).json({ message: "User tidak ditemukan!" });
