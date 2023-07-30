@@ -105,7 +105,7 @@ const OTP_SMS = async (phoneNumber, otp) => {
   const client = twilio(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN);
 
   return client.messages.create({
-    body: `Kode OTP anda adalah : ${otp}`,
+    body: `Jangan berikan kode ini kepada siapapun, termasuk pihak yang mengaku dari layanan pelanggan kami. Kode OTP anda adalah : ${otp} - ATEPAY`,
     from: TWILIO_SMS_NUMBER,
     to: phoneNumber,
   });
@@ -120,7 +120,7 @@ const OTP_WHATSAPP = async (phoneNumber, otp) => {
   const client = twilio(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN);
 
   return client.messages.create({
-    body: `Kode OTP anda adalah : ${otp}`,
+    body: `Jangan berikan kode ini kepada siapapun, termasuk pihak yang mengaku dari layanan pelanggan kami. Kode OTP anda adalah : ${otp} - ATEPAY`,
     from: `whatsapp:${TWILIO_WA_NUMBER}`,
     to: `whatsapp:${phoneNumber}`,
   });
@@ -130,8 +130,8 @@ const OTP_EMAIL = async (email, otp) => {
   return sendEmail({
     to: email,
     subject: "Kode OTP",
-    text: `Kode OTP anda adalah : ${otp}`,
-    html: `<p>Kode OTP anda adalah : <b>${otp}</b></p>`,
+    text: `Jangan berikan kode ini kepada siapapun, termasuk pihak yang mengaku dari layanan pelanggan kami. Kode OTP anda adalah : ${otp} - ATEPAY`,
+    html: `<p>Jangan berikan kode ini kepada siapapun, termasuk pihak yang mengaku dari layanan pelanggan kami. Kode OTP anda adalah : <b>${otp}</b></p> - ATEPAY`,
   });
 };
 
@@ -148,20 +148,21 @@ exports.sendotp = async (req, res) => {
     case OTP.SMS:
       OTP_SMS(contact, otp)
         .then((message) => {
-          res.status(200).json({ message: "Kode OTP Telah Terkirim!" });
+          res.status(200).json({ message: message.body });
         })
         .catch((error) => {
-          res.status(500).json({ message: "Gagal Mengirimkan Kode OTP!" });
+          res.status(500).json({ message: error.message });
         });
       break;
 
     case OTP.WHATSAPP:
       OTP_WHATSAPP(contact, otp)
         .then((message) => {
-          res.status(200).json({ message: "Kode OTP Telah Terkirim!" });
+          console.log(message)
+          res.status(200).json({ message: message.body });
         })
         .catch((error) => {
-          res.status(500).json({ message: "Gagal Mengirimkan Kode OTP!" });
+          res.status(500).json({ message: error.message });
         });
       break;
 
@@ -171,7 +172,7 @@ exports.sendotp = async (req, res) => {
           res.status(200).json({ message: "Kode OTP Telah Terkirim!" });
         })
         .catch((error) => {
-          res.status(500).json({ message: "Gagal Mengirimkan Kode OTP!" });
+          res.status(500).json({ message: error.message });
         });
       break;
   }
