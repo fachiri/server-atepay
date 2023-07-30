@@ -67,6 +67,9 @@ module.exports = (sequelize, Sequelize) => {
     step:{
       type: Sequelize.INTEGER(1),
       allowNull: false
+    },
+    no_ref:{
+      type: Sequelize.STRING(24),
     }
   });
 

@@ -243,7 +243,7 @@ exports.resetpassword = async (req, res) => {
 
 //checktoken
 exports.checktoken = async (req, res) => {
-  let token = req.params.token;
+  let token = req.body.token;
 
   if (!token) {
     return res.status(401).json({ message: "No token provided!" });
@@ -252,11 +252,13 @@ exports.checktoken = async (req, res) => {
     const decoded = jwt.verify(token, SECRET);
     res.status(200).json({
       message: "token is valid",
+      status: "VALID",
       data: decoded,
     });
   } catch (error) {
     res.status(401).json({
       message: "invalid token",
+      status: "INVALID"
     });
   }
 };
