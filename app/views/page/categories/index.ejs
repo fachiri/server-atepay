@@ -26,7 +26,10 @@
             <td><%= category.description %></td>
             <td>
               <a href="/categories/<%= category.id %>/edit" class="btn btn-primary btn-sm">Edit</a>
-              <a href="/categories/<%= category.id %>/delete" onClick="return confirm('Yakin ingin menghapus Kategori Pulsa?')" class="btn btn-danger btn-sm">Hapus</a>
+              <form action="/categories/<%= category.id %>" method="POST" class="d-inline" onSubmit="return confirm('Anda yakin ingin menghapus kategori <%= category.name %>?')">
+                <input type="hidden" name="_method" value="DELETE">
+                <button class="btn btn-danger btn-sm">Hapus</button>
+              </form>
             </td>
           </tr>
           <% 

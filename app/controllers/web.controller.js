@@ -280,3 +280,51 @@ exports.categories = async (req, res) => {
     categories,
   });
 };
+
+exports.categoriesAdd = async (req, res) => {
+  const { name, description } = req.body;
+
+  await Category.create({ name, description });
+
+  req.flash("alert", "success");
+  req.flash("message", "Data berhasil ditambahkan.");
+  return res.redirect("/categories");
+};
+
+exports.categoriesEdit = async (req, res) => {
+  const id = req.params.id;
+
+  const category = await Category.findByPk(id);
+
+  res.render("../views/page/categories/edit", {
+    url: "/categories",
+    title: "Kategori",
+    layout: "layout/master",
+    category,
+  });
+};
+
+exports.categoriesUpdate = async (req, res) => {
+  const id = req.params.id;
+  const { name, description } = req.body;
+
+  const category = await Category.findByPk(id);
+
+  await category.update({ name, description });
+
+  req.flash("alert", "success");
+  req.flash("message", "Data berhasil diubah.");
+  return res.redirect("/categories");
+};
+
+exports.categoriesDelete = async (req, res) => {
+  const id = req.params.id;
+
+  const category = await Category.findByPk(id);
+
+  await category.destroy();
+
+  req.flash("alert", "success");
+  req.flash("message", "Data berhasil dihapus.");
+  return res.redirect("/categories");
+};
