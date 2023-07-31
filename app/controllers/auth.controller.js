@@ -97,7 +97,7 @@ exports.signout = async (req, res) => {
   }
 };
 
-const OTP_SMS = async (phoneNumber, otp) => {
+const OTP_SMS = async (phoneNumber, otpText) => {
   const TWILIO_ACCOUNT_SID = await getEnv("TWILIO_ACCOUNT_SID");
   const TWILIO_AUTH_TOKEN = await getEnv("TWILIO_AUTH_TOKEN");
   const TWILIO_SMS_NUMBER = await getEnv("TWILIO_SMS_NUMBER");
@@ -105,14 +105,13 @@ const OTP_SMS = async (phoneNumber, otp) => {
   const client = twilio(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN);
 
   return client.messages.create({
-    body: `Jangan berikan kode ini kepada siapapun, termasuk pihak yang mengaku dari layanan pelanggan kami. Kode OTP anda adalah : ${otp} - ATEPAY`,
+    body: otpText,
     from: TWILIO_SMS_NUMBER,
     to: phoneNumber,
   });
 };
 
-// FIXME: implement this
-const OTP_WHATSAPP = async (phoneNumber, otp) => {
+const OTP_WHATSAPP = async (phoneNumber, otpText) => {
   const TWILIO_ACCOUNT_SID = await getEnv("TWILIO_ACCOUNT_SID");
   const TWILIO_AUTH_TOKEN = await getEnv("TWILIO_AUTH_TOKEN");
   const TWILIO_WA_NUMBER = await getEnv("TWILIO_WA_NUMBER");
@@ -120,24 +119,27 @@ const OTP_WHATSAPP = async (phoneNumber, otp) => {
   const client = twilio(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN);
 
   return client.messages.create({
-    body: `Jangan berikan kode ini kepada siapapun, termasuk pihak yang mengaku dari layanan pelanggan kami. Kode OTP anda adalah : ${otp} - ATEPAY`,
+    body: otpText,
     from: `whatsapp:${TWILIO_WA_NUMBER}`,
     to: `whatsapp:${phoneNumber}`,
   });
 };
 
-const OTP_EMAIL = async (email, otp) => {
+const OTP_EMAIL = async (email, otpText, otpHTML) => {
   return sendEmail({
     to: email,
     subject: "Kode OTP",
-    text: `Jangan berikan kode ini kepada siapapun, termasuk pihak yang mengaku dari layanan pelanggan kami. Kode OTP anda adalah : ${otp} - ATEPAY`,
-    html: `<p>Jangan berikan kode ini kepada siapapun, termasuk pihak yang mengaku dari layanan pelanggan kami. Kode OTP anda adalah : <b>${otp}</b></p> - ATEPAY`,
+    text: otpText,
+    html: otpHTML,
   });
 };
 
 //sendotp
 exports.sendotp = async (req, res) => {
-  const { contact, id, type } = req.body;
+  const { id, type } = req.body;
+  const user = await User.findOne({ where: { id } });
+  const otpText = `Jangan berikan kode ini kepada siapapun, termasuk pihak yang mengaku dari layanan pelanggan kami. Kode OTP anda adalah : ${otp} - ATEPAY`;
+  const otpHTML = `<p>Jangan berikan kode ini kepada siapapun, termasuk pihak yang mengaku dari layanan pelanggan kami. Kode OTP anda adalah : <b>${otp}</b></p> - ATEPAY`;
 
   // Generate random 6-digit OTP
   const otp = Math.floor(100000 + Math.random() * 900000);
@@ -146,7 +148,7 @@ exports.sendotp = async (req, res) => {
 
   switch (type) {
     case OTP.SMS:
-      OTP_SMS(contact, otp)
+      OTP_SMS(user.phone, otpText)
         .then((message) => {
           res.status(200).json({ message: message.body });
         })
@@ -156,9 +158,9 @@ exports.sendotp = async (req, res) => {
       break;
 
     case OTP.WHATSAPP:
-      OTP_WHATSAPP(contact, otp)
+      OTP_WHATSAPP(user.phone, otpText)
         .then((message) => {
-          console.log(message)
+          console.log(message);
           res.status(200).json({ message: message.body });
         })
         .catch((error) => {
@@ -167,7 +169,7 @@ exports.sendotp = async (req, res) => {
       break;
 
     case OTP.EMAIL:
-      OTP_EMAIL(contact, otp)
+      OTP_EMAIL(user.email, otpText, otpHTML)
         .then((message) => {
           res.status(200).json({ message: "Kode OTP Telah Terkirim!" });
         })
@@ -278,7 +280,7 @@ exports.checktoken = async (req, res) => {
   } catch (error) {
     res.status(401).json({
       message: "invalid token",
-      status: "INVALID"
+      status: "INVALID",
     });
   }
 };
