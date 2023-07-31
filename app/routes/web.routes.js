@@ -48,7 +48,7 @@ const checkUserSession = (req, res, next) => {
 const authenticate = [checkUserSession, bindUserSession];
 
 module.exports = async (app) => {
-  app.use(bodyParser.urlencoded());
+  app.use(bodyParser.urlencoded({ extended: true }));
   app.use(
     methodOverride((req, res) => {
       if (req.body && typeof req.body === "object" && "_method" in req.body) {
@@ -105,7 +105,9 @@ module.exports = async (app) => {
   );
   app.post("/setting/env/update", authenticate, controllers.updateEnv);
 
-  app.get("/product", authenticate, controllers.product);
+  app.get("/products", authenticate, controllers.products);
+  app.get("/products/:id", authenticate, controllers.productsDetail);
+  app.put("/products", authenticate, controllers.productsUpdate);
 
   // categories
   app.get("/categories", authenticate, controllers.categories);
@@ -113,6 +115,11 @@ module.exports = async (app) => {
   app.get("/categories/:id/edit", authenticate, controllers.categoriesEdit);
   app.put("/categories/:id", authenticate, controllers.categoriesUpdate);
   app.delete("/categories/:id", authenticate, controllers.categoriesDelete);
+  app.get(
+    "/categories/:id/products",
+    authenticate,
+    controllers.categoriesProducts
+  );
 
   app.get("/login", (req, res) => {
     if (req.session.user) return res.redirect("/dashboard");

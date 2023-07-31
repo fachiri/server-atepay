@@ -9,6 +9,7 @@
     "alter": "node app/db/alter.js",
     "seed": "node app/db/seed.js",
     "truncate": "node app/db/truncate.js",
+    "refresh": "npm run truncate && npm run alter && npm run seed",
     "ngrok": "ngrok http --domain=flying-husky-national.ngrok-free.app 8000"
   },
   "keywords": [

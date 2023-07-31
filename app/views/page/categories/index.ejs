@@ -15,6 +15,7 @@
             <th scope="col">#</th>
             <th scope="col">Nama</th>
             <th scope="col">Deskripsi</th>
+            <th scope="col">Jumlah</th>
             <th scope="col">Aksi</th>
           </tr>
         </thead>
@@ -24,16 +25,17 @@
             <th scope="row"><%= i+1 %></th>
             <td><%= category.name %></td>
             <td><%= category.description %></td>
+            <td><b><%= category.products.length %></b> Produk</td>
             <td>
               <a href="/categories/<%= category.id %>/edit" class="btn btn-primary btn-sm">Edit</a>
               <form action="/categories/<%= category.id %>" method="POST" class="d-inline" onSubmit="return confirm('Anda yakin ingin menghapus kategori <%= category.name %>?')">
                 <input type="hidden" name="_method" value="DELETE">
                 <button class="btn btn-danger btn-sm">Hapus</button>
               </form>
+              <a href="/categories/<%= category.id %>/products" class="btn btn-success btn-sm">Lihat Produk</a>
             </td>
           </tr>
-          <% 
-          });  %>
+          <% }); %>
         </tbody>
       </table>
     </div>
