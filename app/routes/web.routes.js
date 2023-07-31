@@ -15,6 +15,7 @@ const store = (destination) =>
       cb(null, uniqueSuffix + "-" + file.originalname);
     },
   });
+
 const upload = multer({
   storage: store("app/public/uploads/sliders/"),
   fileFilter: function (req, file, cb) {
@@ -46,6 +47,8 @@ const uploadIcon = multer({
 });
 
 const resize = async (req, res, next) => {
+  if (!req.file) return next();
+
   const buffer = await sharp(req.file.path).resize(30, 30).toBuffer();
 
   sharp(buffer).toFile(req.file.path, (err) => {
@@ -80,16 +83,7 @@ const checkUserSession = (req, res, next) => {
 const authenticate = [checkUserSession, bindUserSession];
 
 module.exports = async (app) => {
-  app.use(bodyParser.urlencoded({ extended: true }));
-  app.use(
-    methodOverride((req, res) => {
-      if (req.body && typeof req.body === "object" && "_method" in req.body) {
-        const method = req.body._method;
-        delete req.body._method;
-        return method;
-      }
-    })
-  );
+  app.use(methodOverride("_method"));
 
   app.use(function (req, res, next) {
     res.header("Access-Control-Allow-Headers", "Origin, Content-Type, Accept");
@@ -150,7 +144,12 @@ module.exports = async (app) => {
     controllers.categoriesAdd
   );
   app.get("/categories/:id/edit", authenticate, controllers.categoriesEdit);
-  app.put("/categories/:id", authenticate, controllers.categoriesUpdate);
+  app.put(
+    "/categories/:id",
+    authenticate,
+    uploadIconWithSize,
+    controllers.categoriesUpdate
+  );
   app.delete("/categories/:id", authenticate, controllers.categoriesDelete);
   app.get(
     "/categories/:id/products",

@@ -1,3 +1,4 @@
+const fs = require("fs");
 const bcrypt = require("bcryptjs");
 const md5 = require("md5");
 const db = require("../models");
@@ -381,13 +382,27 @@ exports.categoriesEdit = async (req, res) => {
   });
 };
 
+const deleteIfExists = (path) => {
+  if (fs.existsSync(path)) {
+    fs.unlinkSync(path);
+  }
+};
+
 exports.categoriesUpdate = async (req, res) => {
   const id = req.params.id;
   const { name, description } = req.body;
 
   const category = await Category.findByPk(id);
 
-  await category.update({ name, description });
+  if (req.file) {
+    // unlink previous image
+    deleteIfExists(`app/public/uploads/icons/${category.icon}`);
+
+    const icon = req.file.filename;
+    await category.update({ name, description, icon });
+  } else {
+    await category.update({ name, description });
+  }
 
   req.flash("alert", "success");
   req.flash("message", "Data berhasil diubah.");
