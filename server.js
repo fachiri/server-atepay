@@ -37,6 +37,7 @@ require("./app/routes/user.routes")(app);
 require("./app/routes/web.routes")(app);
 require("./app/routes/payment.routes")(app);
 require("./app/routes/callback.routes")(app);
+require("./app/routes/product.routes")(app);
 
 app.get("/", (req, res) => {
   res.render("../views/page/landing", { layout: "layout/master3" });
