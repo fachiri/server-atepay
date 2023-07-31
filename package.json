@@ -8,7 +8,8 @@
     "sync": "node app/db/sync.js",
     "alter": "node app/db/alter.js",
     "seed": "node app/db/seed.js",
-    "truncate": "node app/db/truncate.js"
+    "truncate": "node app/db/truncate.js",
+    "ngrok": "ngrok http --domain=flying-husky-national.ngrok-free.app 8000"
   },
   "keywords": [
     "node.js",

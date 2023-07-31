@@ -259,13 +259,20 @@ exports.product = async (req, res) => {
     "🚀 ~ file: web.controller.js:259 ~ exports.product= ~ response.data.data:",
     response.data.data
   );
-  res.json(
-    response.data.data.map((item) => ({
-      product_name: item.product_name,
-      category: item.category,
-      brand: item.brand,
-      type: item.type,
-      desc: item.desc,
-    }))
-  );
+  // res.json(
+  //   response.data.data.map((item) => ({
+  //     product_name: item.product_name,
+  //     category: item.category,
+  //     brand: item.brand,
+  //     type: item.type,
+  //     desc: item.desc,
+  //   }))
+  // );
+
+  res.render("../views/page/product", {
+    url: "/product",
+    title: "Produk",
+    layout: "layout/master",
+    products: response.data.data,
+  });
 };
