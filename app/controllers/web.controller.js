@@ -352,9 +352,16 @@ exports.categories = async (req, res) => {
 };
 
 exports.categoriesAdd = async (req, res) => {
-  const { name, description } = req.body;
+  if (!req.file) {
+    req.flash("alert", "danger");
+    req.flash("message", "Gambar tidak boleh kosong.");
+    return res.redirect("/categories");
+  }
 
-  await Category.create({ name, description });
+  const { name, description } = req.body;
+  const icon = req.file.filename;
+
+  await Category.create({ name, description, icon });
 
   req.flash("alert", "success");
   req.flash("message", "Data berhasil ditambahkan.");
