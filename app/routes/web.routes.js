@@ -93,6 +93,7 @@ module.exports = async (app) => {
   app.post("/setting/env/update", authenticate, controllers.updateEnv);
 
   app.get("/product", authenticate, controllers.product);
+  app.get("/categories", authenticate, controllers.categories);
 
   app.get("/login", (req, res) => {
     if (req.session.user) return res.redirect("/dashboard");

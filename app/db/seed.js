@@ -6,6 +6,7 @@ const Role = db.role;
 const Page = db.page;
 const User = db.user;
 const Env = db.env;
+const Category = db.category;
 
 try {
   console.log("--- Seed Mulai");
@@ -170,6 +171,41 @@ try {
           : process.env.DIGIFLAZZ_PRODUCTION_KEY,
     },
   });
+
+  if (process.env.ENVIRONMENT === ENV.DEVELOPMENT) {
+    // Only seed in development environment
+    Category.findOrCreate({
+      where: { id: 1 },
+      defaults: {
+        name: "Pulsa",
+        description: "Pulsa",
+      },
+    });
+
+    Category.findOrCreate({
+      where: { id: 2 },
+      defaults: {
+        name: "Paket Data",
+        description: "Paket Data",
+      },
+    });
+
+    Category.findOrCreate({
+      where: { id: 3 },
+      defaults: {
+        name: "Token PLN",
+        description: "Token PLN",
+      },
+    });
+
+    Category.findOrCreate({
+      where: { id: 4 },
+      defaults: {
+        name: "Voucher Game",
+        description: "Voucher Game",
+      },
+    });
+  }
 
   console.log("--- Seed Selesai");
 } catch (error) {
