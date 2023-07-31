@@ -1,6 +1,7 @@
 require("dotenv").config();
 const bcrypt = require("bcryptjs");
 const db = require("../models");
+const { ENV } = require("../consts");
 const Role = db.role;
 const Page = db.page;
 const User = db.user;
@@ -150,6 +151,27 @@ try {
       value: process.env.EMAIL_PASSWORD,
     },
   });
+
+  Env.findOrCreate({
+    where: { id: 11 },
+    defaults: {
+      name: "DIGIFLAZZ_USERNAME",
+      value: process.env.DIGIFLAZZ_USERNAME,
+    },
+  });
+
+  Env.findOrCreate({
+    where: { id: 12 },
+    defaults: {
+      name: "DIGIFLAZZ_KEY",
+      value:
+        process.env.ENVIRONMENT === ENV.DEVELOPMENT
+          ? process.env.DIGIFLAZZ_DEVELOPMENT_KEY
+          : process.env.DIGIFLAZZ_PRODUCTION_KEY,
+    },
+  });
+
+  console.log("--- Seed Selesai");
 } catch (error) {
   console.error("Error creating roles:", error);
 }

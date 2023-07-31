@@ -1,9 +1,12 @@
 const bcrypt = require("bcryptjs");
+const md5 = require("md5");
 const db = require("../models");
+const axios = require("axios");
 const User = db.user;
 const Slider = db.slider;
 const Page = db.page;
 const Env = db.env;
+const getEnv = db.getEnv;
 
 exports.setting = async (req, res) => {
   const page = "../views/page/setting";
@@ -238,4 +241,31 @@ exports.updateEnv = async (req, res) => {
   req.flash("alert", "success");
   req.flash("message", "Data berhasil diubah.");
   return res.redirect("/setting");
+};
+
+exports.product = async (req, res) => {
+  const DIGIFLAZZ_ENDPOINT = process.env.DIGIFLAZZ_ENDPOINT;
+  const DIGIFLAZZ_USERNAME = await getEnv("DIGIFLAZZ_USERNAME");
+  const DIGIFLAZZ_KEY = await getEnv("DIGIFLAZZ_KEY");
+  const sign = md5(`${DIGIFLAZZ_USERNAME}${DIGIFLAZZ_KEY}pricelist`);
+
+  const response = await axios.post(`${DIGIFLAZZ_ENDPOINT}/price-list`, {
+    cmd: "prepaid",
+    username: DIGIFLAZZ_USERNAME,
+    sign,
+  });
+
+  console.log(
+    "🚀 ~ file: web.controller.js:259 ~ exports.product= ~ response.data.data:",
+    response.data.data
+  );
+  res.json(
+    response.data.data.map((item) => ({
+      product_name: item.product_name,
+      category: item.category,
+      brand: item.brand,
+      type: item.type,
+      desc: item.desc,
+    }))
+  );
 };
