@@ -1,10 +1,12 @@
 require("dotenv").config();
 const bcrypt = require("bcryptjs");
 const db = require("../models");
+const { ENV } = require("../consts");
 const Role = db.role;
 const Page = db.page;
 const User = db.user;
 const Env = db.env;
+const Category = db.category;
 
 try {
   console.log("--- Seed Mulai");
@@ -150,6 +152,62 @@ try {
       value: process.env.EMAIL_PASSWORD,
     },
   });
+
+  Env.findOrCreate({
+    where: { id: 11 },
+    defaults: {
+      name: "DIGIFLAZZ_USERNAME",
+      value: process.env.DIGIFLAZZ_USERNAME,
+    },
+  });
+
+  Env.findOrCreate({
+    where: { id: 12 },
+    defaults: {
+      name: "DIGIFLAZZ_KEY",
+      value:
+        process.env.ENVIRONMENT === ENV.DEVELOPMENT
+          ? process.env.DIGIFLAZZ_DEVELOPMENT_KEY
+          : process.env.DIGIFLAZZ_PRODUCTION_KEY,
+    },
+  });
+
+  if (process.env.ENVIRONMENT === ENV.DEVELOPMENT) {
+    // Only seed in development environment
+    Category.findOrCreate({
+      where: { id: 1 },
+      defaults: {
+        name: "Pulsa",
+        description: "Pulsa",
+      },
+    });
+
+    Category.findOrCreate({
+      where: { id: 2 },
+      defaults: {
+        name: "Paket Data",
+        description: "Paket Data",
+      },
+    });
+
+    Category.findOrCreate({
+      where: { id: 3 },
+      defaults: {
+        name: "Token PLN",
+        description: "Token PLN",
+      },
+    });
+
+    Category.findOrCreate({
+      where: { id: 4 },
+      defaults: {
+        name: "Voucher Game",
+        description: "Voucher Game",
+      },
+    });
+  }
+
+  console.log("--- Seed Selesai");
 } catch (error) {
   console.error("Error creating roles:", error);
 }

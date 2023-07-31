@@ -3,3 +3,8 @@ module.exports.OTP = {
   WHATSAPP: "WHATSAPP",
   EMAIL: "EMAIL",
 };
+
+module.exports.ENV = {
+  PRODUCTION: "prod",
+  DEVELOPMENT: "dev",
+};

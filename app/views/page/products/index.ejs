@@ -1,0 +1,55 @@
+<div class="container-fluid">
+  <div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800"><%= title %></h1>
+  </div>
+
+  <div class="card shadow mb-4">
+    <div class="card-header py-3">
+      <h6 class="m-0 font-weight-bold text-primary">Daftar Produk</h6>
+    </div>
+    <div class="card-body">
+      <% const remaining = products.filter(product => !product.categoryId).length %>
+      <% if (remaining > 0) { %>
+      <div class="alert alert-warning">
+        <strong>Perhatian!</strong> Anda masih memiliki <strong><%= remaining %></strong> dari <%= products.length %> produk yang belum memiliki kategori.
+      </div>
+      <% } %>
+      <form action="products" method="POST">
+        <input type="hidden" name="_method" value="PUT" />
+        <button type="submit" class="btn btn-primary mb-4">Simpan Perubahan</button>
+
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th scope="col">#</th>
+              <th scope="col">Kode</th>
+              <th scope="col">Nama</th>
+              <th scope="col">Kategori</th>
+              <th scope="col">Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% products.forEach((product, i) => { %>
+            <tr>
+              <th scope="row"><%= i+1 %></th>
+              <td><%= product.buyer_sku_code %></td>
+              <td><%= product.name %></td>
+              <td>
+                <select name="<%= product.buyer_sku_code %>" class="form-control">
+                  <option value="">Belum dipilih</option>
+                  <% categories.forEach(category => { %>
+                  <option value="<%= category.id %>" <%= product.categoryId == category.id ? "selected" : "" %>><%= category.name %></option>
+                  <% }) %>
+                </select>
+              </td>
+              <td><a href="/products/<%= product.id %>/" class="btn btn-primary btn-sm">Detail</a></td>
+            </tr>
+            <% }); %>
+          </tbody>
+        </table>
+
+        <button type="submit" class="btn btn-primary mb-4">Simpan Perubahan</button>
+      </form>
+    </div>
+  </div>
+</div>

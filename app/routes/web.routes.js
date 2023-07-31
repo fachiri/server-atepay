@@ -1,5 +1,7 @@
 const controllers = require("../controllers/web.controller");
 const multer = require("multer");
+const bodyParser = require("body-parser");
+const methodOverride = require("method-override");
 
 // Konfigurasi penyimpanan file
 const storage = multer.diskStorage({
@@ -46,6 +48,17 @@ const checkUserSession = (req, res, next) => {
 const authenticate = [checkUserSession, bindUserSession];
 
 module.exports = async (app) => {
+  app.use(bodyParser.urlencoded({ extended: true }));
+  app.use(
+    methodOverride((req, res) => {
+      if (req.body && typeof req.body === "object" && "_method" in req.body) {
+        const method = req.body._method;
+        delete req.body._method;
+        return method;
+      }
+    })
+  );
+
   app.use(function (req, res, next) {
     res.header("Access-Control-Allow-Headers", "Origin, Content-Type, Accept");
     next();
@@ -90,7 +103,23 @@ module.exports = async (app) => {
     authenticate,
     controllers.updateContent
   );
-  app.post("/setting/env/update", controllers.updateEnv);
+  app.post("/setting/env/update", authenticate, controllers.updateEnv);
+
+  app.get("/products", authenticate, controllers.products);
+  app.get("/products/:id", authenticate, controllers.productsDetail);
+  app.put("/products", authenticate, controllers.productsUpdate);
+
+  // categories
+  app.get("/categories", authenticate, controllers.categories);
+  app.post("/categories", authenticate, controllers.categoriesAdd);
+  app.get("/categories/:id/edit", authenticate, controllers.categoriesEdit);
+  app.put("/categories/:id", authenticate, controllers.categoriesUpdate);
+  app.delete("/categories/:id", authenticate, controllers.categoriesDelete);
+  app.get(
+    "/categories/:id/products",
+    authenticate,
+    controllers.categoriesProducts
+  );
 
   app.get("/login", (req, res) => {
     if (req.session.user) return res.redirect("/dashboard");
