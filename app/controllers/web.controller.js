@@ -3,7 +3,7 @@ const bcrypt = require("bcryptjs");
 const md5 = require("md5");
 const db = require("../models");
 const axios = require("axios");
-const { USER_STATUS } = require("../consts");
+const { USER_STATUS, PRODUCT_LIMIT } = require("../consts");
 const User = db.user;
 const Slider = db.slider;
 const Page = db.page;
@@ -248,40 +248,11 @@ exports.updateEnv = async (req, res) => {
 };
 
 exports.products = async (req, res) => {
-  const DIGIFLAZZ_ENDPOINT = process.env.DIGIFLAZZ_ENDPOINT;
-  const DIGIFLAZZ_USERNAME = await getEnv("DIGIFLAZZ_USERNAME");
-  const DIGIFLAZZ_KEY = await getEnv("DIGIFLAZZ_KEY");
-  const sign = md5(`${DIGIFLAZZ_USERNAME}${DIGIFLAZZ_KEY}pricelist`);
+  const page = req.query.p || 1;
 
-  const response = await axios.post(`${DIGIFLAZZ_ENDPOINT}/price-list`, {
-    cmd: "prepaid",
-    username: DIGIFLAZZ_USERNAME,
-    sign,
-  });
-
-  const responseProducts = response.data.data;
-  for (const product of responseProducts) {
-    await Product.findOrCreate({
-      where: { buyer_sku_code: product.buyer_sku_code },
-      defaults: {
-        name: product.product_name,
-        brand: product.brand,
-        type: product.type,
-        seller_name: product.seller_name,
-        price: product.price,
-        buyer_sku_code: product.buyer_sku_code,
-        buyer_product_status: product.buyer_product_status,
-        seller_product_status: product.seller_product_status,
-        unlimited_stock: product.unlimited_stock,
-        stock: product.stock,
-        multi: product.multi,
-        start_cut_off: product.start_cut_off,
-        end_cut_off: product.end_cut_off,
-        description: product.desc,
-      },
-    });
-  }
   const products = await Product.findAll({
+    limit: PRODUCT_LIMIT,
+    offset: (page - 1) * PRODUCT_LIMIT,
     include: [
       {
         model: Category,
@@ -291,13 +262,76 @@ exports.products = async (req, res) => {
   });
   const categories = await Category.findAll();
 
+  // total of Products that didn't have category
+  const totalUncategorized = await Product.count({
+    where: { categoryId: null },
+  });
+
+  const total = await Product.count();
+  console.log(total);
+  const from = (page - 1) * PRODUCT_LIMIT + 1;
+  const to = page * PRODUCT_LIMIT;
+  const totalPages = Math.ceil(total / PRODUCT_LIMIT);
+
   res.render("../views/page/products/index", {
     url: "/products",
     title: "Produk",
     layout: "layout/master",
     products,
     categories,
+    total,
+    page,
+    from,
+    to,
+    totalUncategorized,
+    totalPages,
   });
+};
+
+exports.productsSync = async (req, res) => {
+  try {
+    const DIGIFLAZZ_ENDPOINT = process.env.DIGIFLAZZ_ENDPOINT;
+    const DIGIFLAZZ_USERNAME = await getEnv("DIGIFLAZZ_USERNAME");
+    const DIGIFLAZZ_KEY = await getEnv("DIGIFLAZZ_KEY");
+    const sign = md5(`${DIGIFLAZZ_USERNAME}${DIGIFLAZZ_KEY}pricelist`);
+
+    const response = await axios.post(`${DIGIFLAZZ_ENDPOINT}/price-list`, {
+      cmd: "prepaid",
+      username: DIGIFLAZZ_USERNAME,
+      sign,
+    });
+
+    const responseProducts = response.data.data;
+    for (const product of responseProducts) {
+      await Product.findOrCreate({
+        where: { buyer_sku_code: product.buyer_sku_code },
+        defaults: {
+          name: product.product_name,
+          brand: product.brand,
+          type: product.type,
+          seller_name: product.seller_name,
+          price: product.price,
+          buyer_sku_code: product.buyer_sku_code,
+          buyer_product_status: product.buyer_product_status,
+          seller_product_status: product.seller_product_status,
+          unlimited_stock: product.unlimited_stock,
+          stock: product.stock,
+          multi: product.multi,
+          start_cut_off: product.start_cut_off,
+          end_cut_off: product.end_cut_off,
+          description: product.desc,
+        },
+      });
+    }
+
+    req.flash("alert", "success");
+    req.flash("message", "Berhasil menyinkronkan data produk");
+  } catch (error) {
+    req.flash("alert", "danger");
+    req.flash("message", "Gagal menyinkronkan data produk");
+  }
+
+  return res.redirect("/products");
 };
 
 exports.productsDetail = async (req, res) => {

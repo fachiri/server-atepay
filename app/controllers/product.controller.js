@@ -49,3 +49,19 @@ module.exports.getByCategoryAndBrand = async (req, res) => {
     data: products,
   });
 };
+
+module.exports.getByCategoryAndBrand = async (req, res) => {
+  const { categoryId, brand } = req.body;
+
+  const products = Product.findAll({
+    where: {
+      categoryId,
+      brand,
+    },
+  });
+
+  return res.json({
+    message: "success",
+    data: products,
+  });
+};

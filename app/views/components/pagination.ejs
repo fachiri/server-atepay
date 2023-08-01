@@ -1,0 +1,42 @@
+<!-- Require -->
+<!-- - Current page -->
+<!-- Total Page -->
+<style>
+  .page-link.disabled {
+    color: #6c757d;
+    pointer-events: none;
+    cursor: auto;
+    background-color: #fff;
+    border-color: #dee2e6;
+  }
+</style>
+
+<nav aria-label="Page navigation example">
+  <ul class="pagination">
+    <li class="page-item">
+      <a class="page-link <%= current > 1 ? '' : 'disabled' %>" href="?p=<%= current - 1 %>" aria-label="Previous"><span aria-hidden="true">&laquo;</span></a>
+    </li>
+
+    <% for(let i = 1; i <= Math.min(x, current - 1); i++) { %>
+    <li class="page-item"><a class="page-link" href="?p=<%= i %>"><%= i %></a></li>
+    <% } %>
+
+    <% if(current > x + 1) { %>
+    <li style="pointer-events: none;" class="page-item"><a href="" class="page-link">...</a></li>
+    <% } %>
+
+    <li style="pointer-events: none;" class="page-item active"><a href="" class="page-link"><%= current %></a></li>
+
+    <% if(current < total - x) { %>
+    <li style="pointer-events: none;" class="page-item"><a href="" class="page-link">...</a></li>
+    <% } %>
+
+    <% for(let i = Math.max(current + 1, total - x + 1); i < total + 1; i++) { %>
+    <li class="page-item"><a class="page-link" href="?p=<%= i %>"><%= i %></a></li>
+    <% } %>
+
+    <li class="page-item">
+      <a class="page-link <%= current < total ? '' : 'disabled' %>" href="?p=<%= current + 1 %>" aria-label="Next"><span aria-hidden="true">&raquo;</span></a>
+    </li>
+  </ul>
+</nav>
