@@ -1,0 +1,43 @@
+<div class="container-fluid">
+  <div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800"><%= title %></h1>
+  </div>
+
+  <div class="card shadow mb-4">
+    <div class="card-header py-3">
+      <h6 class="m-0 font-weight-bold text-primary">Detail User</h6>
+    </div>
+    <div class="card-body">
+      <a href="/users">&laquo; Kembali ke daftar user</a>
+      <br />
+      <br />
+      <img class="mb-4" src="/uploads/profiles/<%= user.avatar %>" alt="<%= user.name %> avatar" style="width: 200px; aspect-ratio: 1/1; object-fit: contain;" />
+      <br />
+      <br />
+      <h4 class="mb-4">
+        Status: <span class="badge badge-<%= user.status === "INACTIVE" ? 'danger' : 'success' %>">
+          <%= user.status %>
+        </span>
+      </h4>
+      <table class="table table-hover">
+        <tbody>
+          <tr>
+            <th scope="row">Nama</th>
+            <th>:</td>
+            <td><%= user.name %></td>
+          </tr>
+          <tr>
+            <th scope="row">Email</th>
+            <th>:</td>
+            <td><%= user.email %></td>
+          </tr>
+          <tr>
+            <th scope="row">No HP</th>
+            <th>:</td>
+            <td><%= user.phone %></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

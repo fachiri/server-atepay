@@ -442,3 +442,28 @@ exports.categoriesProducts = async (req, res) => {
     category,
   });
 };
+
+exports.users = {
+  index: async (req, res) => {
+    const users = await User.findAll();
+
+    res.render("../views/page/users/index", {
+      url: "/users",
+      title: "Pengguna",
+      layout: "layout/master",
+      users,
+    });
+  },
+
+  show: async (req, res) => {
+    const id = req.params.id;
+    const user = await User.findByPk(id);
+
+    res.render("../views/page/users/show", {
+      url: "/users",
+      title: "Pengguna",
+      layout: "layout/master",
+      user,
+    });
+  },
+};

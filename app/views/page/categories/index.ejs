@@ -24,7 +24,7 @@
           <% categories.forEach((category, i) => { %>
           <tr>
             <th scope="row"><%= i+1 %></th>
-            <td><img src="/uploads/icons/<%= category.icon %>" alt="<%= category.name %>"></td>
+            <td><img style="width: 30px; height: 30px; object-fit: contain;" src="/uploads/icons/<%= category.icon %>" alt="<%= category.name %>"></td>
             <td><%= category.name %></td>
             <td><%= category.description %></td>
             <td><b><%= category.products.length %></b> Produk</td>
