@@ -15,7 +15,10 @@
       </div>
       <% } %>
       <form action="/products/?_method=PUT" method="POST">
-        <button type="submit" class="btn btn-primary mb-4">Simpan Perubahan</button>
+        <div class="d-flex justify-content-between mb-4" style="width: 100%;">
+          <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
+          <a href="/products/sync" class="btn btn-outline-primary">Sinkronisasi Data Produk</a>
+        </div>
 
         <table class="table table-hover">
           <thead>
@@ -28,6 +31,7 @@
             </tr>
           </thead>
           <tbody>
+            <% if(products.length > 0) { %>
             <% products.forEach((product, i) => { %>
             <tr>
               <th scope="row"><%= i+1 %></th>
@@ -44,6 +48,11 @@
               <td><a href="/products/<%= product.id %>/" class="btn btn-primary btn-sm">Detail</a></td>
             </tr>
             <% }); %>
+            <% } else { %>
+            <tr>
+              <th colspan="5" class="text-center">Tampaknya Anda belum memiliki produk. Coba <a href="/products/sync">sinkronisasi data produk</a>.</th>
+            </tr>
+            <% } %>
           </tbody>
         </table>
 

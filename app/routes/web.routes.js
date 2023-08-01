@@ -132,6 +132,7 @@ module.exports = async (app) => {
   app.post("/setting/env/update", authenticate, controllers.updateEnv);
 
   app.get("/products", authenticate, controllers.products);
+  app.get("/products/sync", authenticate, controllers.productsSync);
   app.get("/products/:id", authenticate, controllers.productsDetail);
   app.put("/products", authenticate, controllers.productsUpdate);
 
