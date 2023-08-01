@@ -3,7 +3,7 @@ const bcrypt = require("bcryptjs");
 const md5 = require("md5");
 const db = require("../models");
 const axios = require("axios");
-const { USER_STATUS } = require("../consts");
+const { USER_STATUS, PRODUCT_LIMIT } = require("../consts");
 const User = db.user;
 const Slider = db.slider;
 const Page = db.page;
@@ -248,7 +248,11 @@ exports.updateEnv = async (req, res) => {
 };
 
 exports.products = async (req, res) => {
+  const page = req.query.p || 1;
+
   const products = await Product.findAll({
+    limit: PRODUCT_LIMIT,
+    offset: (page - 1) * PRODUCT_LIMIT,
     include: [
       {
         model: Category,
@@ -258,12 +262,29 @@ exports.products = async (req, res) => {
   });
   const categories = await Category.findAll();
 
+  // total of Products that didn't have category
+  const totalUncategorized = await Product.count({
+    where: { categoryId: null },
+  });
+
+  const total = await Product.count();
+  console.log(total);
+  const from = (page - 1) * PRODUCT_LIMIT + 1;
+  const to = page * PRODUCT_LIMIT;
+  const totalPages = Math.ceil(total / PRODUCT_LIMIT);
+
   res.render("../views/page/products/index", {
     url: "/products",
     title: "Produk",
     layout: "layout/master",
     products,
     categories,
+    total,
+    page,
+    from,
+    to,
+    totalUncategorized,
+    totalPages,
   });
 };
 
