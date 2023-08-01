@@ -13,6 +13,7 @@
         <thead>
           <tr>
             <th scope="col">#</th>
+            <th scope="col">Icon</th>
             <th scope="col">Nama</th>
             <th scope="col">Deskripsi</th>
             <th scope="col">Jumlah</th>
@@ -23,13 +24,13 @@
           <% categories.forEach((category, i) => { %>
           <tr>
             <th scope="row"><%= i+1 %></th>
+            <td><img src="/uploads/icons/<%= category.icon %>" alt="<%= category.name %>"></td>
             <td><%= category.name %></td>
             <td><%= category.description %></td>
             <td><b><%= category.products.length %></b> Produk</td>
             <td>
               <a href="/categories/<%= category.id %>/edit" class="btn btn-primary btn-sm">Edit</a>
-              <form action="/categories/<%= category.id %>" method="POST" class="d-inline" onSubmit="return confirm('Anda yakin ingin menghapus kategori <%= category.name %>?')">
-                <input type="hidden" name="_method" value="DELETE">
+              <form action="/categories/<%= category.id %>?_method=DELETE" method="POST" class="d-inline" onSubmit="return confirm('Anda yakin ingin menghapus kategori <%= category.name %>?')">
                 <button class="btn btn-danger btn-sm">Hapus</button>
               </form>
               <a href="/categories/<%= category.id %>/products" class="btn btn-success btn-sm">Lihat Produk</a>
@@ -46,25 +47,52 @@
       <h6 class="m-0 font-weight-bold text-primary">Tambah Kategori</h6>
     </div>
     <div class="card-body">
-      <form action="/categories" method="POST">
-        <div class="form-group row mb-4">
-          <label class="col-form-label text-md-right col-12 col-md-3 col-lg-3">Nama Kategori</label>
-          <div class="col-sm-12 col-md-7">
-            <input type="text" class="form-control" name="name" placeholder="Nama Kategori">
+      <form action="/categories" method="POST" enctype="multipart/form-data">
+        <div class="row" style="--spacer: 1rem;">
+          <div class="col-12 col-md-2 d-flex flex-column" style="gap: var(--spacer);">
+            <label for="icon" class="flex-grow-1 rounded-lg" style="aspect-ratio: 1/1; background-color: #85879644; cursor: pointer;">
+              <img src="#" alt="icon" style="width: 100%; height: 100%; object-fit: contain;" id="output-icon">
+            </label>
+            <label type="button" class="btn btn-outline-primary">
+              <input class="d-none" type="file" name="icon" id="icon" accept="image/*">
+              Pilih Icon
+            </label>
           </div>
-        </div>
-        <div class="form-group row mb-4">
-          <label class="col-form-label text-md-right col-12 col-md-3 col-lg-3">Deskripsi</label>
-          <div class="col-sm-12 col-md-7">
-            <textarea class="form-control" name="description" placeholder="Deskripsi Kategori"></textarea>
-          </div>
-        </div>
-        <div class="form-group row mb-4">
-          <div class="col-sm-12 col-md-7 offset-md-3 offset-lg-3">
-            <button class="btn btn-primary" type="submit">Simpan</button>
+
+          <div class="col-12 col-md-10 d-flex flex-column">
+            <div class="form-group row">
+              <label class="col-form-label text-md-right col-12 col-md-2">Nama Kategori</label>
+              <div class="col-sm-12 col-md-10">
+                <input type="text" class="form-control" name="name" placeholder="Nama Kategori">
+              </div>
+            </div>
+            <div class="form-group row">
+              <label class="col-form-label text-md-right col-12 col-md-2">Deskripsi</label>
+              <div class="col-sm-12 col-md-10">
+                <textarea class="form-control" name="description" placeholder="Deskripsi Kategori"></textarea>
+              </div>
+            </div>
+            <div class="form-group row">
+              <div class="col-sm-12 col-md-10 offset-md-2">
+                <button class="btn btn-primary" type="submit">Simpan</button>
+              </div>
+            </div>
           </div>
         </div>
       </form>
     </div>
   </div>
 </div>
+
+<script>
+  const fileIcon = document.getElementById('icon');
+  const outputImg = document.getElementById('output-icon');
+  fileIcon.addEventListener('change', e => {
+    if (fileIcon.files && fileIcon.files[0]) {
+      const reader = new FileReader();
+
+      reader.onload = e => outputImg.src = e.target.result;
+      reader.readAsDataURL(fileIcon.files[0]);
+    }
+  });
+</script>

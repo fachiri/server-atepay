@@ -8,6 +8,10 @@ module.exports = (sequelize, Sequelize) => {
       type: Sequelize.TEXT,
       allowNull: false,
     },
+    icon: {
+      type: Sequelize.STRING,
+      allowNull: false,
+    },
   });
 
   return Category;

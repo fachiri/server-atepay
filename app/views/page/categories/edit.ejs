@@ -8,26 +8,55 @@
       <h6 class="m-0 font-weight-bold text-primary">Edit Kategori</h6>
     </div>
     <div class="card-body">
-      <form action="/categories/<%= category.id %>" method="POST">
-        <input type="hidden" name="_method" value="PUT">
-        <div class="form-group row mb-4">
-          <label class="col-form-label text-md-right col-12 col-md-3 col-lg-3">Nama Kategori</label>
-          <div class="col-sm-12 col-md-7">
-            <input type="text" class="form-control" name="name" placeholder="Nama Kategori" value="<%= category.name %>">
+      <a href="/categories">&laquo; Kembali ke daftar kategori</a>
+      <br />
+      <br />
+      <form action="/categories/<%= category.id %>?_method=PUT" method="POST" enctype="multipart/form-data">
+        <div class="row" style="--spacer: 1rem;">
+          <div class="col-12 col-md-2 d-flex flex-column" style="gap: var(--spacer);">
+            <label for="icon" class="flex-grow-1 rounded-lg" style="aspect-ratio: 1/1; background-color: #85879644; cursor: pointer;">
+              <img src="/uploads/icons/<%= category.icon %>" alt="icon" style="width: 100%; height: 100%; object-fit: contain;" id="output-icon">
+            </label>
+            <label type="button" class="btn btn-outline-primary">
+              <input class="d-none" type="file" name="icon" id="icon" accept="image/*">
+              Pilih Icon
+            </label>
           </div>
-        </div>
-        <div class="form-group row mb-4">
-          <label class="col-form-label text-md-right col-12 col-md-3 col-lg-3">Deskripsi</label>
-          <div class="col-sm-12 col-md-7">
-            <textarea class="form-control" name="description" placeholder="Deskripsi Kategori"><%= category.description %></textarea>
-          </div>
-        </div>
-        <div class="form-group row mb-4">
-          <div class="col-sm-12 col-md-7 offset-md-3 offset-lg-3">
-            <button class="btn btn-primary" type="submit">Simpan</button>
+
+          <div class="col-12 col-md-10 d-flex flex-column">
+            <div class="form-group row">
+              <label class="col-form-label text-md-right col-12 col-md-2">Nama Kategori</label>
+              <div class="col-sm-12 col-md-10">
+                <input type="text" class="form-control" name="name" placeholder="Nama Kategori" value="<%= category.name %>">
+              </div>
+            </div>
+            <div class="form-group row">
+              <label class="col-form-label text-md-right col-12 col-md-2">Deskripsi</label>
+              <div class="col-sm-12 col-md-10">
+                <textarea class="form-control" name="description" placeholder="Deskripsi Kategori"><%= category.description %></textarea>
+              </div>
+            </div>
+            <div class="form-group row">
+              <div class="col-sm-12 col-md-10 offset-md-2">
+                <button class="btn btn-primary" type="submit">Simpan</button>
+              </div>
+            </div>
           </div>
         </div>
       </form>
     </div>
   </div>
 </div>
+
+<script>
+  const fileIcon = document.getElementById('icon');
+  const outputImg = document.getElementById('output-icon');
+  fileIcon.addEventListener('change', e => {
+    if (fileIcon.files && fileIcon.files[0]) {
+      const reader = new FileReader();
+
+      reader.onload = e => outputImg.src = e.target.result;
+      reader.readAsDataURL(fileIcon.files[0]);
+    }
+  });
+</script>

@@ -1,20 +1,23 @@
 const controllers = require("../controllers/web.controller");
 const multer = require("multer");
+const sharp = require("sharp");
 const bodyParser = require("body-parser");
 const methodOverride = require("method-override");
 
 // Konfigurasi penyimpanan file
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "app/public/uploads/sliders/");
-  },
-  filename: function (req, file, cb) {
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    cb(null, uniqueSuffix + "-" + file.originalname);
-  },
-});
+const store = (destination) =>
+  multer.diskStorage({
+    destination: function (req, file, cb) {
+      cb(null, destination);
+    },
+    filename: function (req, file, cb) {
+      const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+      cb(null, uniqueSuffix + "-" + file.originalname);
+    },
+  });
+
 const upload = multer({
-  storage: storage,
+  storage: store("app/public/uploads/sliders/"),
   fileFilter: function (req, file, cb) {
     if (
       file.mimetype === "image/jpeg" ||
@@ -29,6 +32,38 @@ const upload = multer({
     }
   },
 });
+
+const uploadIcon = multer({
+  storage: store("app/public/uploads/icons/"),
+  fileFilter: function (req, file, cb) {
+    if (!file.mimetype.startsWith("image")) {
+      req.flash("alert", "danger");
+      req.flash("message", "Only image files are allowed.");
+      return cb(null, false);
+    }
+
+    cb(null, true);
+  },
+});
+
+const resize = async (req, res, next) => {
+  if (!req.file) return next();
+
+  const buffer = await sharp(req.file.path).resize(30, 30).toBuffer();
+
+  sharp(buffer).toFile(req.file.path, (err) => {
+    if (err) {
+      console.log(err);
+      req.flash("alert", "danger");
+      req.flash("message", "Failed to upload icon.");
+      return res.redirect("/categories");
+    }
+
+    next();
+  });
+};
+
+const uploadIconWithSize = [uploadIcon.single("icon"), resize];
 
 const bindUserSession = (req, res, next) => {
   res.locals.user = req.session.user;
@@ -48,16 +83,7 @@ const checkUserSession = (req, res, next) => {
 const authenticate = [checkUserSession, bindUserSession];
 
 module.exports = async (app) => {
-  app.use(bodyParser.urlencoded({ extended: true }));
-  app.use(
-    methodOverride((req, res) => {
-      if (req.body && typeof req.body === "object" && "_method" in req.body) {
-        const method = req.body._method;
-        delete req.body._method;
-        return method;
-      }
-    })
-  );
+  app.use(methodOverride("_method"));
 
   app.use(function (req, res, next) {
     res.header("Access-Control-Allow-Headers", "Origin, Content-Type, Accept");
@@ -111,9 +137,19 @@ module.exports = async (app) => {
 
   // categories
   app.get("/categories", authenticate, controllers.categories);
-  app.post("/categories", authenticate, controllers.categoriesAdd);
+  app.post(
+    "/categories",
+    authenticate,
+    uploadIconWithSize,
+    controllers.categoriesAdd
+  );
   app.get("/categories/:id/edit", authenticate, controllers.categoriesEdit);
-  app.put("/categories/:id", authenticate, controllers.categoriesUpdate);
+  app.put(
+    "/categories/:id",
+    authenticate,
+    uploadIconWithSize,
+    controllers.categoriesUpdate
+  );
   app.delete("/categories/:id", authenticate, controllers.categoriesDelete);
   app.get(
     "/categories/:id/products",
