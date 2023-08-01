@@ -13,3 +13,5 @@ module.exports.USER_STATUS = {
   ACTIVE: "ACTIVE",
   INACTIVE: "INACTIVE",
 };
+
+module.exports.PRODUCT_LIMIT = 20;
