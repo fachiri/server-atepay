@@ -22,7 +22,7 @@ async function getRequestConfig() {
 exports.createBill = async (req, res) => {
   try {
     const { user_id, payload } = req.body
-    const response = await axios.post(`${process.env.FLIP_API_URL}/v2/pwf/bill`, payload, requestConfig)
+    const response = await axios.post(`${process.env.FLIP_API_URL}/v2/pwf/bill`, payload, await getRequestConfig())
     const { id } = await Payment.create({ status: 'PENDING', bill_link_id: response.data.link_id })
     const bill = await Bill.create({...{paymentId: id}, ...{no_ref: generateReferenceNumber()}, ...{user_id}, ...response.data})
     res.send(bill)
@@ -45,8 +45,8 @@ exports.myBills = async (req, res) => {
       include: {
         model: db.payment,
         as: "payment",
-        // required: false
       },
+      order: [['createdAt', 'DESC']],
     });
     res.send(bills);
   } catch (error) {

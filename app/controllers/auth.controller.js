@@ -34,11 +34,11 @@ exports.signup = async (req, res) => {
       });
 
       const result = user.setRoles(roles);
-      if (result) res.send({ message: "Registrasi Berhasil!" });
+      if (result) res.send({ data: user, message: "Registrasi Berhasil!" });
     } else {
       // user has role = 1
       const result = user.setRoles([1]);
-      if (result) res.send({ message: "Registrasi Berhasil!!" });
+      if (result) res.send({ data: user, message: "Registrasi Berhasil!" });
     }
   } catch (error) {
     res.status(500).send({ message: error.message });
@@ -138,17 +138,18 @@ const OTP_EMAIL = async (email, otpText, otpHTML) => {
 exports.sendotp = async (req, res) => {
   const { id, type } = req.body;
   const user = await User.findOne({ where: { id } });
-  const otpText = `Jangan berikan kode ini kepada siapapun, termasuk pihak yang mengaku dari layanan pelanggan kami. Kode OTP anda adalah : ${otp} - ATEPAY`;
-  const otpHTML = `<p>Jangan berikan kode ini kepada siapapun, termasuk pihak yang mengaku dari layanan pelanggan kami. Kode OTP anda adalah : <b>${otp}</b></p> - ATEPAY`;
-
+  
   // Generate random 6-digit OTP
   const otp = Math.floor(100000 + Math.random() * 900000);
+
+  const otpText = `Jangan berikan kode ini kepada siapapun, termasuk pihak yang mengaku dari layanan pelanggan kami. Kode OTP anda adalah : ${otp} - ATEPAY`;
+  const otpHTML = `<p>Jangan berikan kode ini kepada siapapun, termasuk pihak yang mengaku dari layanan pelanggan kami. Kode OTP anda adalah : <b>${otp}</b></p> - ATEPAY`;
 
   await User.update({ code: otp }, { where: { id } });
 
   switch (type) {
     case OTP.SMS:
-      OTP_SMS(user.phone, otpText)
+      OTP_SMS(`+${user.phone}`, otpText)
         .then((message) => {
           res.status(200).json({ message: message.body });
         })
@@ -158,9 +159,8 @@ exports.sendotp = async (req, res) => {
       break;
 
     case OTP.WHATSAPP:
-      OTP_WHATSAPP(user.phone, otpText)
+      OTP_WHATSAPP(`+${user.phone}`, otpText)
         .then((message) => {
-          console.log(message);
           res.status(200).json({ message: message.body });
         })
         .catch((error) => {
