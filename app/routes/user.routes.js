@@ -22,6 +22,7 @@ const upload = multer({
     ) {
       cb(null, true);
     } else {
+      console.log('Only image files are allowed.')
       req.flash("alert", "danger");
       req.flash("message", "Only image files are allowed.");
       return cb(null, false);

@@ -54,13 +54,14 @@ exports.show = async (req, res) => {
 exports.changeProfilePicture = async (req, res) => {
   try {
     const uploadedFile = req.file;
+    const { id } = req.params
     if (!uploadedFile) {
       throw { statusCode: 404, message: 'Data tidak ditemukan!' };
     }
-
-    const data = await User.update({
-      avatar: uploadedFile.filename
-    });
+    const data = await User.update(
+      { avatar: uploadedFile.filename },
+      { where: { id } }
+    );
 
     res.status(200).send({ message: 'Data berhasil ditemukan!', data });
   } catch (error) {
