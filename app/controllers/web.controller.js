@@ -3,6 +3,7 @@ const bcrypt = require("bcryptjs");
 const md5 = require("md5");
 const db = require("../models");
 const axios = require("axios");
+const { USER_STATUS } = require("../consts");
 const User = db.user;
 const Slider = db.slider;
 const Page = db.page;
@@ -465,5 +466,27 @@ exports.users = {
       layout: "layout/master",
       user,
     });
+  },
+
+  activate: async (req, res) => {
+    const id = req.params.id;
+    const user = await User.findByPk(id);
+
+    await user.update({ status: USER_STATUS.ACTIVE });
+
+    req.flash("alert", "success");
+    req.flash("message", "User berhasil diaktivasi");
+    return res.redirect("/users");
+  },
+
+  deactivate: async (req, res) => {
+    const id = req.params.id;
+    const user = await User.findByPk(id);
+
+    await user.update({ status: USER_STATUS.INACTIVE });
+
+    req.flash("alert", "success");
+    req.flash("message", "User berhasil dinonaktifkan");
+    return res.redirect("/users");
   },
 };
