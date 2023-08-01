@@ -19,11 +19,15 @@ module.exports = (sequelize, Sequelize) => {
     avatar: {
       type: Sequelize.STRING
     },
-    code:{
+    code: {
       type: Sequelize.INTEGER(6)
     },
-    pin:{
+    pin: {
       type: Sequelize.STRING(6)
+    },
+    status: {
+      type: Sequelize.STRING(8),
+      defaultValue: 'INACTIVE'
     }
   });
 

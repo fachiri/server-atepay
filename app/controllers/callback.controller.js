@@ -1,5 +1,7 @@
 const db = require("../models");
 const Payment = db.payment;
+const Notification = db.notification;
+const Bill = db.bill;
 
 exports.acceptPayment = async (req, res) => {
   try {
@@ -26,6 +28,25 @@ exports.acceptPayment = async (req, res) => {
       where: {
         bill_link_id: paymentData.bill_link_id
       }
+    })
+    const bill = await Bill.findOne({ where: { link_id: paymentData.bill_link_id }})
+    let title = 'Pembayaran Berhasil'
+    let body = 'Pembayaran anda telah berhasil dikonfirmasi. Terima kasih atas pembayaran Anda! Kami senang dapat melayani Anda dan memberikan layanan terbaik. Jangan ragu untuk menghubungi kami jika Anda membutuhkan bantuan lebih lanjut. Semoga transaksi ini membantu mencapai tujuan Anda.';
+    if(paymentData.status == 'FAILED') {
+      title = 'Pembayaran Gagal'
+      body = 'Maaf, pembayaran anda gagal. Kami menyarankan untuk memeriksa kembali informasi pembayaran yang Anda berikan. Jika Anda mengalami masalah atau butuh bantuan, silakan hubungi tim dukungan pelanggan kami. Kami berkomitmen untuk membantu Anda menyelesaikan masalah ini dengan cepat dan efisien. Terima kasih atas pengertian Anda.';
+    }
+    await Notification.create({
+      title,
+      body,
+      type: 'Pembayaran',
+      data: JSON.stringify({
+        no_ref: bill.no_ref,
+        amount: paymentData.amount,
+        paymentMethod: paymentData.sender_bank_type,
+        paymentDate: paymentData.created_at
+      }),
+      userId: bill.user_id
     })
     res.send(req.body)
   } catch (error) {
