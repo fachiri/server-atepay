@@ -1,0 +1,54 @@
+<div class="container-fluid">
+  <div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800"><%= title %></h1>
+  </div>
+
+  <div class="card shadow mb-4">
+    <div class="card-header py-3">
+      <h6 class="m-0 font-weight-bold text-primary">Detail Produk</h6>
+    </div>
+    <div class="card-body">
+      <h4 class="mb-4">Kategori: <span class="badge badge-primary badge-lg"><%= product.category.name %></span></h4>
+      <% const priceFormatter = new Intl.NumberFormat('id-ID', {style: 'currency', currency: 'IDR'}).format %>
+      <table class="table table-hover">
+        <tbody>
+          <tr>
+            <th scope="row">Kode</th>
+            <th>:</td>
+            <td><%= product.buyer_sku_code %></td>
+          </tr>
+          <tr>
+            <th scope="row">Nama</th>
+            <th>:</td>
+            <td><%= product.name %></td>
+          </tr>
+          <tr>
+            <th scope="row">Deskripsi</th>
+            <th>:</td>
+            <td><%= product.description %></td>
+          </tr>
+          <tr>
+            <th scope="row">Brand</th>
+            <th>:</td>
+            <td><%= product.brand %></td>
+          </tr>
+          <tr>
+            <th scope="row">Harga</th>
+            <th>:</td>
+            <td><%= priceFormatter(product.price) %></td>
+          </tr>
+          <tr>
+            <th scope="row">Stok</th>
+            <th>:</td>
+            <td><%= product.stock %></td>
+          </tr>
+          <tr>
+            <th scope="row">Seller</th>
+            <th>:</td>
+            <td><%= product.seller_name %></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

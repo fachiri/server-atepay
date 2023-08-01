@@ -1,9 +1,14 @@
 const bcrypt = require("bcryptjs");
+const md5 = require("md5");
 const db = require("../models");
+const axios = require("axios");
 const User = db.user;
 const Slider = db.slider;
 const Page = db.page;
 const Env = db.env;
+const getEnv = db.getEnv;
+const Category = db.category;
+const Product = db.product;
 
 exports.setting = async (req, res) => {
   const page = "../views/page/setting";
@@ -238,4 +243,178 @@ exports.updateEnv = async (req, res) => {
   req.flash("alert", "success");
   req.flash("message", "Data berhasil diubah.");
   return res.redirect("/setting");
+};
+
+exports.products = async (req, res) => {
+  const DIGIFLAZZ_ENDPOINT = process.env.DIGIFLAZZ_ENDPOINT;
+  const DIGIFLAZZ_USERNAME = await getEnv("DIGIFLAZZ_USERNAME");
+  const DIGIFLAZZ_KEY = await getEnv("DIGIFLAZZ_KEY");
+  const sign = md5(`${DIGIFLAZZ_USERNAME}${DIGIFLAZZ_KEY}pricelist`);
+
+  const response = await axios.post(`${DIGIFLAZZ_ENDPOINT}/price-list`, {
+    cmd: "prepaid",
+    username: DIGIFLAZZ_USERNAME,
+    sign,
+  });
+
+  const responseProducts = response.data.data;
+  for (const product of responseProducts) {
+    await Product.findOrCreate({
+      where: { buyer_sku_code: product.buyer_sku_code },
+      defaults: {
+        name: product.product_name,
+        brand: product.brand,
+        type: product.type,
+        seller_name: product.seller_name,
+        price: product.price,
+        buyer_sku_code: product.buyer_sku_code,
+        buyer_product_status: product.buyer_product_status,
+        seller_product_status: product.seller_product_status,
+        unlimited_stock: product.unlimited_stock,
+        stock: product.stock,
+        multi: product.multi,
+        start_cut_off: product.start_cut_off,
+        end_cut_off: product.end_cut_off,
+        description: product.desc,
+      },
+    });
+  }
+  const products = await Product.findAll({
+    include: [
+      {
+        model: Category,
+        as: "category",
+      },
+    ],
+  });
+  const categories = await Category.findAll();
+
+  res.render("../views/page/products/index", {
+    url: "/products",
+    title: "Produk",
+    layout: "layout/master",
+    products,
+    categories,
+  });
+};
+
+exports.productsDetail = async (req, res) => {
+  const id = req.params.id;
+  const product = await Product.findByPk(id, {
+    include: [
+      {
+        model: Category,
+        as: "category",
+      },
+    ],
+  });
+
+  res.render("../views/page/products/detail", {
+    url: "/products",
+    title: "Produk",
+    layout: "layout/master",
+    product,
+  });
+};
+
+exports.productsUpdate = async (req, res) => {
+  const entries = Object.entries(req.body);
+  for (const [key, value] of entries) {
+    if (!value) continue;
+    console.log({ key, value });
+    await Product.update(
+      { categoryId: value },
+      { where: { buyer_sku_code: key } }
+    );
+  }
+
+  req.flash("alert", "success");
+  req.flash("message", "Data berhasil diubah.");
+  return res.redirect("/products");
+};
+
+exports.categories = async (req, res) => {
+  const categories = await Category.findAll({
+    include: [
+      {
+        model: Product,
+        as: "products",
+      },
+    ],
+  });
+
+  res.render("../views/page/categories/index", {
+    url: "/categories",
+    title: "Kategori",
+    layout: "layout/master",
+    categories,
+  });
+};
+
+exports.categoriesAdd = async (req, res) => {
+  const { name, description } = req.body;
+
+  await Category.create({ name, description });
+
+  req.flash("alert", "success");
+  req.flash("message", "Data berhasil ditambahkan.");
+  return res.redirect("/categories");
+};
+
+exports.categoriesEdit = async (req, res) => {
+  const id = req.params.id;
+
+  const category = await Category.findByPk(id);
+
+  res.render("../views/page/categories/edit", {
+    url: "/categories",
+    title: "Kategori",
+    layout: "layout/master",
+    category,
+  });
+};
+
+exports.categoriesUpdate = async (req, res) => {
+  const id = req.params.id;
+  const { name, description } = req.body;
+
+  const category = await Category.findByPk(id);
+
+  await category.update({ name, description });
+
+  req.flash("alert", "success");
+  req.flash("message", "Data berhasil diubah.");
+  return res.redirect("/categories");
+};
+
+exports.categoriesDelete = async (req, res) => {
+  const id = req.params.id;
+
+  const category = await Category.findByPk(id);
+
+  await category.destroy();
+
+  req.flash("alert", "success");
+  req.flash("message", "Data berhasil dihapus.");
+  return res.redirect("/categories");
+};
+
+exports.categoriesProducts = async (req, res) => {
+  const id = req.params.id;
+
+  const category = await Category.findByPk(id, {
+    include: [
+      {
+        model: Product,
+        as: "products",
+      },
+    ],
+  });
+
+  res.render("../views/page/categories/products", {
+    url: "/categories",
+    title: "Kategori",
+    layout: "layout/master",
+    category,
+  });
 };

@@ -30,6 +30,8 @@ db.page = require("../models/page.model.js")(sequelize, Sequelize);
 db.bill = require("../models/bill.model.js")(sequelize, Sequelize);
 db.payment = require("../models/payment.model.js")(sequelize, Sequelize);
 db.notification = require("../models/notification.model.js")(sequelize, Sequelize);
+db.category = require("../models/category.model.js")(sequelize, Sequelize);
+db.product = require("../models/product.model.js")(sequelize, Sequelize);
 
 db.role.belongsToMany(db.user, {
   through: "user_roles",
@@ -37,10 +39,14 @@ db.role.belongsToMany(db.user, {
 db.user.belongsToMany(db.role, {
   through: "user_roles",
 });
+
 db.bill.belongsTo(db.payment);
 db.payment.hasOne(db.bill);
 db.user.hasMany(db.notification);
 db.notification.belongsTo(db.user);
+
+db.category.hasMany(db.product);
+db.product.belongsTo(db.category);
 
 db.ROLES = ["user", "admin"];
 
