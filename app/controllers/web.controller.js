@@ -3,6 +3,7 @@ const bcrypt = require("bcryptjs");
 const md5 = require("md5");
 const db = require("../models");
 const axios = require("axios");
+const { USER_STATUS } = require("../consts");
 const User = db.user;
 const Slider = db.slider;
 const Page = db.page;
@@ -441,4 +442,51 @@ exports.categoriesProducts = async (req, res) => {
     layout: "layout/master",
     category,
   });
+};
+
+exports.users = {
+  index: async (req, res) => {
+    const users = await User.findAll();
+
+    res.render("../views/page/users/index", {
+      url: "/users",
+      title: "Pengguna",
+      layout: "layout/master",
+      users,
+    });
+  },
+
+  show: async (req, res) => {
+    const id = req.params.id;
+    const user = await User.findByPk(id);
+
+    res.render("../views/page/users/show", {
+      url: "/users",
+      title: "Pengguna",
+      layout: "layout/master",
+      user,
+    });
+  },
+
+  activate: async (req, res) => {
+    const id = req.params.id;
+    const user = await User.findByPk(id);
+
+    await user.update({ status: USER_STATUS.ACTIVE });
+
+    req.flash("alert", "success");
+    req.flash("message", "User berhasil diaktivasi");
+    return res.redirect("/users");
+  },
+
+  deactivate: async (req, res) => {
+    const id = req.params.id;
+    const user = await User.findByPk(id);
+
+    await user.update({ status: USER_STATUS.INACTIVE });
+
+    req.flash("alert", "success");
+    req.flash("message", "User berhasil dinonaktifkan");
+    return res.redirect("/users");
+  },
 };

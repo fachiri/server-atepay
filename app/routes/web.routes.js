@@ -157,6 +157,11 @@ module.exports = async (app) => {
     controllers.categoriesProducts
   );
 
+  app.get("/users", authenticate, controllers.users.index);
+  app.get("/users/:id", authenticate, controllers.users.show);
+  app.put("/users/:id/activate", authenticate, controllers.users.activate);
+  app.put("/users/:id/deactivate", authenticate, controllers.users.deactivate);
+
   app.get("/login", (req, res) => {
     if (req.session.user) return res.redirect("/dashboard");
 

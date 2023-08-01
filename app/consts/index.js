@@ -8,3 +8,8 @@ module.exports.ENV = {
   PRODUCTION: "prod",
   DEVELOPMENT: "dev",
 };
+
+module.exports.USER_STATUS = {
+  ACTIVE: "ACTIVE",
+  INACTIVE: "INACTIVE",
+};

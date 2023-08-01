@@ -11,6 +11,7 @@ module.exports = (sequelize, Sequelize) => {
     icon: {
       type: Sequelize.STRING,
       allowNull: false,
+      defaultValue: "default.svg",
     },
   });
 
