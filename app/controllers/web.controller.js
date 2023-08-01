@@ -248,39 +248,6 @@ exports.updateEnv = async (req, res) => {
 };
 
 exports.products = async (req, res) => {
-  const DIGIFLAZZ_ENDPOINT = process.env.DIGIFLAZZ_ENDPOINT;
-  const DIGIFLAZZ_USERNAME = await getEnv("DIGIFLAZZ_USERNAME");
-  const DIGIFLAZZ_KEY = await getEnv("DIGIFLAZZ_KEY");
-  const sign = md5(`${DIGIFLAZZ_USERNAME}${DIGIFLAZZ_KEY}pricelist`);
-
-  const response = await axios.post(`${DIGIFLAZZ_ENDPOINT}/price-list`, {
-    cmd: "prepaid",
-    username: DIGIFLAZZ_USERNAME,
-    sign,
-  });
-
-  const responseProducts = response.data.data;
-  for (const product of responseProducts) {
-    await Product.findOrCreate({
-      where: { buyer_sku_code: product.buyer_sku_code },
-      defaults: {
-        name: product.product_name,
-        brand: product.brand,
-        type: product.type,
-        seller_name: product.seller_name,
-        price: product.price,
-        buyer_sku_code: product.buyer_sku_code,
-        buyer_product_status: product.buyer_product_status,
-        seller_product_status: product.seller_product_status,
-        unlimited_stock: product.unlimited_stock,
-        stock: product.stock,
-        multi: product.multi,
-        start_cut_off: product.start_cut_off,
-        end_cut_off: product.end_cut_off,
-        description: product.desc,
-      },
-    });
-  }
   const products = await Product.findAll({
     include: [
       {
@@ -298,6 +265,52 @@ exports.products = async (req, res) => {
     products,
     categories,
   });
+};
+
+exports.productsSync = async (req, res) => {
+  try {
+    const DIGIFLAZZ_ENDPOINT = process.env.DIGIFLAZZ_ENDPOINT;
+    const DIGIFLAZZ_USERNAME = await getEnv("DIGIFLAZZ_USERNAME");
+    const DIGIFLAZZ_KEY = await getEnv("DIGIFLAZZ_KEY");
+    const sign = md5(`${DIGIFLAZZ_USERNAME}${DIGIFLAZZ_KEY}pricelist`);
+
+    const response = await axios.post(`${DIGIFLAZZ_ENDPOINT}/price-list`, {
+      cmd: "prepaid",
+      username: DIGIFLAZZ_USERNAME,
+      sign,
+    });
+
+    const responseProducts = response.data.data;
+    for (const product of responseProducts) {
+      await Product.findOrCreate({
+        where: { buyer_sku_code: product.buyer_sku_code },
+        defaults: {
+          name: product.product_name,
+          brand: product.brand,
+          type: product.type,
+          seller_name: product.seller_name,
+          price: product.price,
+          buyer_sku_code: product.buyer_sku_code,
+          buyer_product_status: product.buyer_product_status,
+          seller_product_status: product.seller_product_status,
+          unlimited_stock: product.unlimited_stock,
+          stock: product.stock,
+          multi: product.multi,
+          start_cut_off: product.start_cut_off,
+          end_cut_off: product.end_cut_off,
+          description: product.desc,
+        },
+      });
+    }
+
+    req.flash("alert", "success");
+    req.flash("message", "Berhasil menyinkronkan data produk");
+  } catch (error) {
+    req.flash("alert", "danger");
+    req.flash("message", "Gagal menyinkronkan data produk");
+  }
+
+  return res.redirect("/products");
 };
 
 exports.productsDetail = async (req, res) => {
