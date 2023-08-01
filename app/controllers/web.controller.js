@@ -413,7 +413,9 @@ exports.categoriesDelete = async (req, res) => {
   const id = req.params.id;
 
   const category = await Category.findByPk(id);
+  const icon = category.icon;
 
+  deleteIfExists(`app/public/uploads/icons/${icon}`);
   await category.destroy();
 
   req.flash("alert", "success");
