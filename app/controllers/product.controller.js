@@ -3,26 +3,21 @@ const Category = db.category;
 const Product = db.product;
 
 module.exports.index = async (req, res) => {
-  let categories = await Category.findAll({
+  const categories = await Category.findAll({
     include: [
       {
         model: Product,
         as: "products",
+        attributes: ["brand"],
       },
     ],
   });
 
-  categories = categories.map((category) => {
+  const categoriesWithUniqueBrands = categories.map((category) => {
     const brands = [];
-    for (const product of category.products) {
-      const brand = brands.find((brand) => brand.name === product.brand);
-      if (!brand) {
-        brands.push({
-          name: product.brand,
-          products: [product],
-        });
-      } else {
-        brand.products.push(product);
+    for (const brand of category.products.map((product) => product.brand)) {
+      if (!brands.includes(brand)) {
+        brands.push(brand);
       }
     }
 
@@ -35,7 +30,23 @@ module.exports.index = async (req, res) => {
 
   res.json({
     message: "success",
-    data: categories,
+    data: categoriesWithUniqueBrands,
+  });
+};
+
+module.exports.getByCategoryAndBrand = async (req, res) => {
+  const { categoryId, brand } = req.body;
+
+  const products = await Product.findAll({
+    where: {
+      categoryId,
+      brand,
+    },
+  });
+
+  return res.json({
+    message: "success",
+    data: products,
   });
 };
 
