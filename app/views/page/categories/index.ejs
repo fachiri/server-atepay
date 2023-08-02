@@ -95,6 +95,7 @@
               <th scope="col">Nama</th>
               <th scope="col">Jumlah</th>
               <th scope="col">Kategori</th>
+              <th scope="col">Display</th>
               <th scope="col">Aksi</th>
             </tr>
           </thead>
@@ -111,6 +112,12 @@
                   <% categories.forEach(category => { %>
                     <option value="<%= category.id %>" <%= brand.categoryId == category.id ? "selected" : "" %>><%= category.name %></option>
                   <% }) %>
+                </select>
+              </td>
+              <td>
+                <select name="display-<%= brand.id %>" class="form-control">
+                  <option value="0" <%= brand.display == 0 ? "selected" : "" %>>TIDAK</option>
+                  <option value="1" <%= brand.display == 1 ? "selected" : "" %>>YA</option>
                 </select>
               </td>
               <td>

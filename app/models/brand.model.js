@@ -9,6 +9,10 @@ module.exports = (sequelize, Sequelize) => {
       allowNull: false,
       defaultValue: "icon-default.png",
     },
+    display: {
+      type: Sequelize.INTEGER(0),
+      defaultValue: 0,
+    },
   });
 
   return Brand;

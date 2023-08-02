@@ -365,18 +365,44 @@ exports.productsDetail = async (req, res) => {
 
 exports.productsUpdate = async (req, res) => {
   const entries = Object.entries(req.body);
+  const updates = [];
+
   for (const [key, value] of entries) {
     if (!value) continue;
-    console.log({ key, value });
-    await Brand.update(
-      { categoryId: value },
-      { where: { id: key } }
-    );
+
+    if (key.startsWith("display-")) {
+      const brandId = key.replace("display-", "");
+      updates.push({
+        id: brandId,
+        display: parseInt(value),
+      });
+    } else {
+      updates.push({
+        id: key,
+        categoryId: parseInt(value),
+      });
+    }
   }
 
-  req.flash("alert", "success");
-  req.flash("message", "Data berhasil diubah.");
-  return res.redirect("/categories");
+  try {
+    await Promise.all(
+      updates.map((update) =>
+        Brand.update(
+          { categoryId: update.categoryId, display: update.display },
+          { where: { id: update.id } }
+        )
+      )
+    );
+
+    req.flash("alert", "success");
+    req.flash("message", "Data berhasil diubah.");
+    return res.redirect("/categories");
+  } catch (error) {
+    console.error("Error updating brands:", error);
+    req.flash("alert", "danger");
+    req.flash("message", "Terjadi kesalahan saat mengubah data.");
+    return res.redirect("/categories");
+  }
 };
 
 exports.categories = async (req, res) => {
