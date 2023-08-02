@@ -32,6 +32,7 @@ db.payment = require("../models/payment.model.js")(sequelize, Sequelize);
 db.notification = require("../models/notification.model.js")(sequelize, Sequelize);
 db.category = require("../models/category.model.js")(sequelize, Sequelize);
 db.product = require("../models/product.model.js")(sequelize, Sequelize);
+db.brand = require("../models/brand.model.js")(sequelize, Sequelize);
 
 db.role.belongsToMany(db.user, {
   through: "user_roles",
@@ -45,8 +46,11 @@ db.payment.hasOne(db.bill);
 db.user.hasMany(db.notification);
 db.notification.belongsTo(db.user);
 
-db.category.hasMany(db.product);
-db.product.belongsTo(db.category);
+db.category.hasMany(db.brand, { as: 'categoryBrands' });
+db.brand.belongsTo(db.category, { as: 'brandCategory' });
+
+db.brand.hasMany(db.product, { as: 'brandProducts' });
+db.product.belongsTo(db.brand, { as: 'productBrand' });
 
 db.ROLES = ["user", "admin"];
 

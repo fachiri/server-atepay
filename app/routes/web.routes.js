@@ -131,8 +131,14 @@ module.exports = async (app) => {
   );
   app.post("/setting/env/update", authenticate, controllers.updateEnv);
 
-  app.get("/products", authenticate, controllers.products);
-  app.get("/products/sync", authenticate, controllers.productsSync);
+  app.get("/products",
+    authenticate,
+    controllers.products
+  );
+  app.get("/products/sync",
+    authenticate,
+    controllers.productsSync
+  );
   app.get("/products/:id", authenticate, controllers.productsDetail);
   app.put("/products", authenticate, controllers.productsUpdate);
 
@@ -141,7 +147,7 @@ module.exports = async (app) => {
   app.post(
     "/categories",
     authenticate,
-    uploadIconWithSize,
+    // uploadIconWithSize,
     controllers.categoriesAdd
   );
   app.get("/categories/:id/edit", authenticate, controllers.categoriesEdit);
@@ -176,7 +182,7 @@ module.exports = async (app) => {
 
   // redirect_url
   app.get("/redirect", (req, res) => {
-    res.redirect("atepay://");
+    res.redirect('atepay://riwayat');
   });
 
   app.get("/:url", controllers.page);

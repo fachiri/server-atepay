@@ -13,9 +13,9 @@
         <strong>Perhatian!</strong> Anda masih memiliki <strong><%= totalUncategorized %></strong> dari <%= total %> produk yang belum memiliki kategori.
       </div>
       <% } %>
-      <form action="/products/?_method=PUT" method="POST">
+      <!-- <form action="/products/?_method=PUT" method="POST"> -->
         <div class="d-flex justify-content-between mb-4" style="width: 100%;">
-          <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
+          <!-- <button type="submit" class="btn btn-primary">Simpan Perubahan</button> -->
           <a href="/products/sync" class="btn btn-outline-primary">Sinkronisasi Data Produk</a>
         </div>
 
@@ -29,7 +29,7 @@
               <th scope="col">#</th>
               <th scope="col">Kode</th>
               <th scope="col">Nama</th>
-              <th scope="col">Kategori</th>
+              <!-- <th scope="col">Kategori</th> -->
               <th scope="col">Aksi</th>
             </tr>
           </thead>
@@ -40,14 +40,14 @@
               <th scope="row"><%= i+from %></th>
               <td><%= product.buyer_sku_code %></td>
               <td><%= product.name %></td>
-              <td>
+              <!-- <td>
                 <select name="<%= product.buyer_sku_code %>" class="form-control">
                   <option value="">Belum dipilih</option>
                   <% categories.forEach(category => { %>
                   <option value="<%= category.id %>" <%= product.categoryId == category.id ? "selected" : "" %>><%= category.name %></option>
                   <% }) %>
                 </select>
-              </td>
+              </td> -->
               <td><a href="/products/<%= product.id %>/" class="btn btn-primary btn-sm">Detail</a></td>
             </tr>
             <% }); %>
@@ -60,8 +60,8 @@
         </table>
         <div class="d-flex justify-content-center"><%- include('../../components/pagination', {total: totalPages, current: +page, x: 2}) %></div>
 
-        <button type="submit" class="btn btn-primary mb-4">Simpan Perubahan</button>
-      </form>
+        <!-- <button type="submit" class="btn btn-primary mb-4">Simpan Perubahan</button>
+      </form> -->
     </div>
   </div>
 </div>

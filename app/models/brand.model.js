@@ -1,14 +1,15 @@
 module.exports = (sequelize, Sequelize) => {
-  const Category = sequelize.define("categories", {
+  const Brand = sequelize.define("brands", {
     name: {
       type: Sequelize.STRING,
       allowNull: false,
     },
-    description: {
-      type: Sequelize.TEXT,
+    icon: {
+      type: Sequelize.STRING,
       allowNull: false,
+      defaultValue: "icon-default.png",
     },
   });
 
-  return Category;
+  return Brand;
 };

@@ -11,6 +11,7 @@ const Env = db.env;
 const getEnv = db.getEnv;
 const Category = db.category;
 const Product = db.product;
+const Brand = db.brand;
 
 exports.setting = async (req, res) => {
   const page = "../views/page/setting";
@@ -255,16 +256,16 @@ exports.products = async (req, res) => {
     offset: (page - 1) * PRODUCT_LIMIT,
     include: [
       {
-        model: Category,
-        as: "category",
+        model: Brand,
+        as: "productBrand",
       },
     ],
   });
-  const categories = await Category.findAll();
+  const categories = await Brand.findAll();
 
   // total of Products that didn't have category
   const totalUncategorized = await Product.count({
-    where: { categoryId: null },
+    where: { brandId: null },
   });
 
   const total = await Product.count();
@@ -303,6 +304,14 @@ exports.productsSync = async (req, res) => {
 
     const responseProducts = response.data.data;
     for (const product of responseProducts) {
+      let brandId
+      const brand = await Brand.findOrCreate({
+        where: { name: product.brand },
+        defaults: {
+          name: product.brand
+        }
+      })
+      brandId = brand[0].id
       await Product.findOrCreate({
         where: { buyer_sku_code: product.buyer_sku_code },
         defaults: {
@@ -320,6 +329,7 @@ exports.productsSync = async (req, res) => {
           start_cut_off: product.start_cut_off,
           end_cut_off: product.end_cut_off,
           description: product.desc,
+          brandId
         },
       });
     }
@@ -358,23 +368,32 @@ exports.productsUpdate = async (req, res) => {
   for (const [key, value] of entries) {
     if (!value) continue;
     console.log({ key, value });
-    await Product.update(
+    await Brand.update(
       { categoryId: value },
-      { where: { buyer_sku_code: key } }
+      { where: { id: key } }
     );
   }
 
   req.flash("alert", "success");
   req.flash("message", "Data berhasil diubah.");
-  return res.redirect("/products");
+  return res.redirect("/categories");
 };
 
 exports.categories = async (req, res) => {
   const categories = await Category.findAll({
     include: [
       {
+        model: Brand,
+        as: "categoryBrands",
+      },
+    ],
+  });
+
+  const brands = await Brand.findAll({
+    include: [
+      {
         model: Product,
-        as: "products",
+        as: "brandProducts",
       },
     ],
   });
@@ -384,24 +403,32 @@ exports.categories = async (req, res) => {
     title: "Kategori",
     layout: "layout/master",
     categories,
+    brands
   });
 };
 
 exports.categoriesAdd = async (req, res) => {
-  if (!req.file) {
+  try {
+    // if (!req.file) {
+    //   req.flash("alert", "danger");
+    //   req.flash("message", "Gambar tidak boleh kosong.");
+    //   return res.redirect("/categories");
+    // }
+  
+    const { name, description } = req.body;
+    console.log(name, description)
+    // const icon = req.file.filename;
+  
+    await Category.create({ name, description });
+  
+    req.flash("alert", "success");
+    req.flash("message", "Data berhasil ditambahkan.");
+  } catch (error) {
     req.flash("alert", "danger");
-    req.flash("message", "Gambar tidak boleh kosong.");
+    req.flash("message", error.message);
+  } finally {
     return res.redirect("/categories");
   }
-
-  const { name, description } = req.body;
-  const icon = req.file.filename;
-
-  await Category.create({ name, description, icon });
-
-  req.flash("alert", "success");
-  req.flash("message", "Data berhasil ditambahkan.");
-  return res.redirect("/categories");
 };
 
 exports.categoriesEdit = async (req, res) => {

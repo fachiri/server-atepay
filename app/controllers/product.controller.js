@@ -1,67 +1,43 @@
 const db = require("../models");
 const Category = db.category;
 const Product = db.product;
+const Brand = db.brand;
 
 module.exports.index = async (req, res) => {
-  const categories = await Category.findAll({
+  try {
+    const categories = await Category.findAll({
+      include: [
+        {
+          model: Brand,
+          as: "categoryBrands",
+        },
+      ],
+    });
+  
+    res.status(200).send({
+      message: "success",
+      data: categories,
+    });
+  } catch (error) {
+    res.status(500).send(error.message);
+  }
+};
+
+module.exports.brand = async (req, res) => {
+  console.log(req.params)
+  const { id } = req.params;
+  const brand = await Brand.findOne({
+    where: { id },
     include: [
       {
         model: Product,
-        as: "products",
-        attributes: ["brand"],
+        as: "brandProducts",
       },
     ],
   });
 
-  const categoriesWithUniqueBrands = categories.map((category) => {
-    const brands = [];
-    for (const brand of category.products.map((product) => product.brand)) {
-      if (!brands.includes(brand)) {
-        brands.push(brand);
-      }
-    }
-
-    return {
-      id: category.id,
-      category: category.name,
-      brands,
-    };
-  });
-
-  res.json({
-    message: "success",
-    data: categoriesWithUniqueBrands,
-  });
-};
-
-module.exports.getByCategoryAndBrand = async (req, res) => {
-  const { categoryId, brand } = req.body;
-
-  const products = await Product.findAll({
-    where: {
-      categoryId,
-      brand,
-    },
-  });
-
   return res.json({
     message: "success",
-    data: products,
-  });
-};
-
-module.exports.getByCategoryAndBrand = async (req, res) => {
-  const { categoryId, brand } = req.body;
-
-  const products = Product.findAll({
-    where: {
-      categoryId,
-      brand,
-    },
-  });
-
-  return res.json({
-    message: "success",
-    data: products,
+    data: brand,
   });
 };
