@@ -4,6 +4,7 @@ const { generateReferenceNumber } = require("../helpers/generator");
 const Bill = db.bill;
 const Payment = db.payment;
 const getEnv = db.getEnv;
+const md5 = require("md5");
 
 async function getRequestConfig() {
   const FLIP_API_SECRET_KEY = await getEnv("FLIP_API_SECRET_KEY");
@@ -109,5 +110,28 @@ exports.myBalance = async (req, res) => {
   } catch (error) {
     console.log(error);
     res.status(500).send({ error: error.message });
+  }
+}
+
+exports.topup = async (req, res) => {
+  try {
+    const { buyer_sku_code, customer_no, ref_id } = req.body
+  
+    const DIGIFLAZZ_ENDPOINT = process.env.DIGIFLAZZ_ENDPOINT;
+    const DIGIFLAZZ_USERNAME = await getEnv("DIGIFLAZZ_USERNAME");
+    const DIGIFLAZZ_KEY = await getEnv("DIGIFLAZZ_KEY");
+    const sign = md5(`${DIGIFLAZZ_USERNAME}${DIGIFLAZZ_KEY}${ref_id}`);
+  
+    const response = await axios.post(`${DIGIFLAZZ_ENDPOINT}/transaction`, {
+      username: DIGIFLAZZ_USERNAME,
+      buyer_sku_code,
+      customer_no,
+      ref_id,
+      sign,
+    });
+    res.send(response.data.data)
+  } catch (error) {
+    console.log(error)
+    res.status(error.response?.status || 500).send(error.response?.data?.data || error.response)
   }
 }

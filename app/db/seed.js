@@ -66,6 +66,7 @@ try {
     defaults: {
       name: "admin",
       email: "admin@gmail.com",
+      status: "ACTIVE",
       password: bcrypt.hashSync("admin", 8),
       phone: "628123456789",
     },

@@ -5,7 +5,7 @@ exports.sliders = async (req, res) => {
   try {
     const data = await Slider.findAll()
     if(data == 0) {
-      throw { statusCode: 404, message: 'Data tidak ditemukan!' };
+      return res.send({message: 'Data tidak ditemukan!', data})
     }
     res.status(200).send({ message: 'Data berhasil ditemukan!', data });
   } catch (error) {

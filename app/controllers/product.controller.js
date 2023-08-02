@@ -41,3 +41,13 @@ module.exports.brand = async (req, res) => {
     data: brand,
   });
 };
+
+module.exports.brands = async (req, res) => {
+  const { payload } = req.body;
+  const brand = await Brand.findAll(payload);
+
+  return res.json({
+    message: "success",
+    data: brand,
+  });
+};
