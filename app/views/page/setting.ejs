@@ -72,7 +72,7 @@
             <% sliders.forEach((e, index, )=> { %>
             <div class="col-4 mb-3">
               <div class="image-container rounded-lg overflow-hidden border border-primary mb-2" style="padding-top: 56.25%; position: relative;">
-                <img src="http://localhost:8000/uploads/sliders/<%= e.name %>" alt="Slider" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;">
+                <img src="/uploads/sliders/<%= e.name %>" alt="Slider" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;">
               </div>
               <div class="d-flex justify-content-between">
                 <form action="/setting/slider/moveLeft/<%= e.id %>" method="post">
